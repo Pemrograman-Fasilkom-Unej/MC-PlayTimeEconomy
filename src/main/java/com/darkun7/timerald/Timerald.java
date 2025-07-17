@@ -1,0 +1,47 @@
+package com.darkun7.timerald;
+
+import org.bukkit.plugin.java.JavaPlugin;
+import com.darkun7.timerald.data.TimeraldManager;
+import com.darkun7.timerald.listener.TimeraldListener;
+import com.darkun7.timerald.listener.CustomItemListener;
+import com.darkun7.timerald.command.DepositCommand;
+import com.darkun7.timerald.command.WithdrawCommand;
+import com.darkun7.timerald.command.TimeraldCommand;
+import com.darkun7.timerald.command.TimeraldTabCompleter;
+import com.darkun7.timerald.gui.TimeraldShopGUI;
+
+public final class Timerald extends JavaPlugin {
+
+    private static Timerald instance;
+    private TimeraldManager timeraldManager;
+
+    @Override
+    public void onEnable() {
+        instance = this;
+        saveDefaultConfig();
+
+        this.timeraldManager = new TimeraldManager(this);
+
+        getServer().getPluginManager().registerEvents(new TimeraldListener(this), this);
+        getServer().getPluginManager().registerEvents(new CustomItemListener(this), this);
+
+        getCommand("deposit").setExecutor(new DepositCommand(this));
+        getCommand("withdraw").setExecutor(new WithdrawCommand(this));
+        getCommand("timerald").setExecutor(new TimeraldCommand(this));
+        getCommand("timerald").setTabCompleter(new TimeraldTabCompleter());
+        
+        new TimeraldShopGUI(this);
+
+        getLogger().info("Timerald plugin enabled.");
+    }
+
+
+    public static Timerald getInstance() {
+        return instance;
+    }
+
+    public TimeraldManager getTimeraldManager() {
+        return timeraldManager;
+    }
+
+}

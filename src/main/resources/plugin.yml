@@ -1,0 +1,19 @@
+name: Timerald
+version: 1.0
+main: com.darkun7.timerald.Timerald
+api-version: 1.20
+depend: [PlayTimeLimiter]
+commands:
+  timerald:
+    description: Timerald shop and buy
+    usage: /timerald [buy <minutes>]
+  deposit:
+    description: Deposit emeralds in hand
+    usage: /deposit
+  withdraw:
+    description: Withdraw emeralds from Timerald
+    usage: /withdraw <amount>
+
+permissions:
+  timerald.use:
+    default: true

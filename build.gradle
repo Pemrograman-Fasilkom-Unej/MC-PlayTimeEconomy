@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.darkun7'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.21.7-R0.1-SNAPSHOT'
+    compileOnly 'net.kyori:adventure-api:4.17.0'
+    compileOnly name: 'PlayTimeLimiter' // Without .jar
+
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+// tasks.withType(JavaCompile) {
+//     options.compilerArgs << "-Xlint:deprecation"
+// }
