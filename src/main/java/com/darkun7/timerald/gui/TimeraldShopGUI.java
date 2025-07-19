@@ -62,6 +62,10 @@ public class TimeraldShopGUI implements Listener {
                     if (cost < 0) continue;
 
                     ItemStack item = new ItemStack(Material.CLOCK);
+                    int amount = Math.min(minutes, 64);
+                    if (amount <= 0) amount = 1;
+                    item.setAmount(amount);
+
                     ItemMeta meta = item.getItemMeta();
                     meta.setDisplayName("§eBuy " + minutes + " Minutes");
                     meta.setLore(List.of("§7Cost: §b" + cost + " Timerald", "§8Click to purchase"));
