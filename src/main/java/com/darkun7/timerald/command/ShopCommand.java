@@ -12,9 +12,17 @@ import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.inventory.InventoryView;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +31,9 @@ public class ShopCommand implements CommandExecutor, Listener {
 
     private final Timerald plugin;
     private final ShopManager shopManager;
+
+    private static final String SHOP_GUI_PREFIX = "§2Shops §7(";
+    private static final String PLAYER_SHOP_GUI_PREFIX = "§2Shop: §e";
 
     private final int SHOP_OPEN_COST = 10; // Timerald required to open shop
 
@@ -41,16 +52,11 @@ public class ShopCommand implements CommandExecutor, Listener {
         
         UUID uuid = player.getUniqueId();
 
-        if (args.length == 0) {
-            // /shop: list shops
-            player.sendMessage("§6Open Shops:");
-            for (PlayerShop ps : shopManager.getOpenShops()) {
-                if (!ps.getListings().isEmpty()) {
-                    player.sendMessage(" - " + Bukkit.getOfflinePlayer(ps.getOwner()).getName());
-                }
-            }
+        if (args.length == 0 || args[0].equalsIgnoreCase("page")) {
+            openPlayerShopSelectorGUI(player, 0);
             return true;
         }
+
 
         if (args[0].equalsIgnoreCase("stash")) {
             PlayerShop shop = shopManager.getOrCreateShop(uuid);
@@ -243,6 +249,244 @@ public class ShopCommand implements CommandExecutor, Listener {
 
         shopManager.savePlayerShop(uuid);
         player.sendMessage("§aYour stash has been saved.");
+    }
+
+    private void openPlayerShopSelectorGUI(Player player, int page) {
+        List<PlayerShop> openShops = shopManager.getOpenShops().stream()
+            .filter(shop -> !shop.getListings().isEmpty())
+            .toList();
+
+        int totalShops = openShops.size();
+        int perPage = 45;
+        int maxPage = (int) Math.ceil((double) totalShops / perPage);
+        if (page >= maxPage) page = maxPage - 1;
+        if (page < 0) page = 0;
+
+        Inventory gui = Bukkit.createInventory(null, 54, SHOP_GUI_PREFIX + "Page " + (page + 1) + " of " + maxPage + ")");
+
+        int start = page * perPage;
+        int end = Math.min(start + perPage, totalShops);
+
+        for (int i = start; i < end; i++) {
+            PlayerShop shop = openShops.get(i);
+            OfflinePlayer owner = Bukkit.getOfflinePlayer(shop.getOwner());
+
+            ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+            SkullMeta meta = (SkullMeta) head.getItemMeta();
+            if (meta != null) {
+                meta.setOwningPlayer(owner);
+                meta.setDisplayName("§b" + owner.getName());
+                meta.setLore(List.of("§7Click to view shop"));
+                head.setItemMeta(meta);
+            }
+
+            gui.addItem(head);
+        }
+
+        // Pagination buttons
+        ItemStack back = new ItemStack(Material.ARROW);
+        ItemMeta backMeta = back.getItemMeta();
+        backMeta.setDisplayName("§ePrevious Page");
+        back.setItemMeta(backMeta);
+        gui.setItem(45, back);
+
+        ItemStack next = new ItemStack(Material.ARROW);
+        ItemMeta nextMeta = next.getItemMeta();
+        nextMeta.setDisplayName("§eNext Page");
+        next.setItemMeta(nextMeta);
+        gui.setItem(53, next);
+
+        player.openInventory(gui);
+    }
+
+
+
+    // click Shop
+    @EventHandler
+    public void onClickShopPage(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        InventoryView view = event.getView();
+        String title = view.getTitle();
+
+        if (!title.startsWith(SHOP_GUI_PREFIX)) return;
+        event.setCancelled(true);
+
+        int slot = event.getSlot();
+        ItemStack clicked = event.getCurrentItem();
+        if (clicked == null || clicked.getType() == Material.AIR) return;
+
+        // Extract current page number
+        int currentPage = 0;
+        Matcher matcher = Pattern.compile("Page (\\d+)").matcher(title);
+        if (matcher.find()) {
+            try {
+                currentPage = Integer.parseInt(matcher.group(1)) - 1;
+            } catch (NumberFormatException ignored) {}
+        }
+
+        List<PlayerShop> openShops = shopManager.getOpenShops().stream()
+            .filter(shop -> !shop.getListings().isEmpty())
+            .toList();
+
+        int perPage = 45;
+        int maxPage = (int) Math.ceil((double) openShops.size() / perPage);
+
+        // Pagination buttons
+        if (slot == 45 && currentPage > 0) {
+            openPlayerShopSelectorGUI(player, currentPage - 1);
+            return;
+        }
+
+        if (slot == 53 && currentPage < maxPage - 1) {
+            openPlayerShopSelectorGUI(player, currentPage + 1);
+            return;
+        }
+
+        // Player head click → open that shop
+        if (clicked.getType() == Material.PLAYER_HEAD) {
+            SkullMeta meta = (SkullMeta) clicked.getItemMeta();
+            if (meta != null && meta.getOwningPlayer() != null) {
+                UUID ownerId = meta.getOwningPlayer().getUniqueId();
+                PlayerShop shop = shopManager.getShop(ownerId);
+                if (shop != null && !shop.getListings().isEmpty()) {
+                    openPlayerShopGUI(player, ownerId, shop, 0);
+                } else {
+                    player.sendMessage("§cThat shop is empty or closed.");
+                }
+            }
+        }
+    }
+
+
+    public void openPlayerShopGUI(Player viewer, UUID ownerId, PlayerShop shop, int page) {
+        String ownerName = Bukkit.getOfflinePlayer(ownerId).getName();
+        List<ShopItem> listings = shop.getListings();
+
+        int itemsPerPage = 45;
+        int maxPage = (int) Math.ceil((double) listings.size() / itemsPerPage);
+        if (page < 0) page = 0;
+        if (page >= maxPage) page = maxPage - 1;
+
+        Inventory gui = Bukkit.createInventory(null, 54, PLAYER_SHOP_GUI_PREFIX + ownerName + " §8(Page " + (page + 1) + ")");
+
+        // Display up to 45 items
+        int start = page * itemsPerPage;
+        int end = Math.min(start + itemsPerPage, listings.size());
+        for (int i = start; i < end; i++) {
+            ShopItem item = listings.get(i);
+            ItemStack display = item.getItem().clone();
+            ItemMeta meta = display.getItemMeta();
+
+            if (meta != null) {
+                int stock = getTotalMatchingItems(shop.getStash(), item.getItem());
+
+                meta.setLore(List.of(
+                    "§7Price: §6" + item.getPrice() + " Timerald",
+                    "§7Quantity per purchase: §ax" + item.getQuantity(),
+                    "§7Stock available: §e" + stock + " items",
+                    "",
+                    "§eClick to buy",
+                    "§8Index: " + i
+                ));
+                display.setItemMeta(meta);
+            }
+
+            gui.setItem(i - start, display);
+        }
+
+        // Navigation buttons
+        ItemStack prev = new ItemStack(Material.ARROW);
+        ItemMeta prevMeta = prev.getItemMeta();
+        prevMeta.setDisplayName("§a« Previous Page");
+        prev.setItemMeta(prevMeta);
+        if (page > 0) gui.setItem(45, prev);
+
+        ItemStack next = new ItemStack(Material.ARROW);
+        ItemMeta nextMeta = next.getItemMeta();
+        nextMeta.setDisplayName("§aNext Page »");
+        next.setItemMeta(nextMeta);
+        if (page < maxPage - 1) gui.setItem(53, next);
+
+        // Balance display in slot 49
+        int balance = plugin.getTimeraldManager().get(viewer.getUniqueId());
+        ItemStack emerald = new ItemStack(Material.EMERALD);
+        ItemMeta emeraldMeta = emerald.getItemMeta();
+        emeraldMeta.setDisplayName("§aYour Balance: §b" + balance + " Timerald");
+        emeraldMeta.setLore(List.of("§7Earn Timeralds by depositing emeralds"));
+        emerald.setItemMeta(emeraldMeta);
+        gui.setItem(49, emerald);
+
+        viewer.openInventory(gui);
+    }
+
+
+    // Purchase
+    @EventHandler
+    public void onPlayerShopClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        String title = event.getView().getTitle();
+        if (!title.startsWith(PLAYER_SHOP_GUI_PREFIX)) return;
+
+        event.setCancelled(true);
+
+        ItemStack clicked = event.getCurrentItem();
+        if (clicked == null || clicked.getType() == Material.AIR) return;
+
+        // Extract shop owner name and page
+        Matcher matcher = Pattern.compile(Pattern.quote(PLAYER_SHOP_GUI_PREFIX) + "(.+?) §8\\(Page (\\d+)\\)").matcher(title);
+        if (!matcher.find()) return;
+
+        String ownerName = matcher.group(1);
+        int page;
+        try {
+            page = Integer.parseInt(matcher.group(2)) - 1;
+        } catch (NumberFormatException e) {
+            return;
+        }
+
+        // Pagination logic
+        int slot = event.getSlot();
+        int perPage = 45;
+        int index = page * perPage + slot;
+
+        // Clicked "Previous"
+        if (slot == 45 && page > 0) {
+            OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerName);
+            PlayerShop shop = shopManager.getShop(owner.getUniqueId());
+            if (shop != null) {
+                openPlayerShopGUI(player, owner.getUniqueId(), shop, page - 1);
+            }
+            return;
+        }
+
+        // Clicked "Next"
+        if (slot == 53) {
+            OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerName);
+            PlayerShop shop = shopManager.getShop(owner.getUniqueId());
+            if (shop != null) {
+                int maxPage = (int) Math.ceil((double) shop.getListings().size() / perPage);
+                if (page + 1 < maxPage) {
+                    openPlayerShopGUI(player, owner.getUniqueId(), shop, page + 1);
+                }
+            }
+            return;
+        }
+
+        // Otherwise, clicked a shop item — simulate /shop buy
+        player.performCommand("shop buy " + ownerName + " " + index);
+        player.closeInventory();
+    }
+
+    // Helper:
+    private int getTotalMatchingItems(List<ItemStack> stash, ItemStack target) {
+        int total = 0;
+        for (ItemStack item : stash) {
+            if (item != null && item.isSimilar(target)) {
+                total += item.getAmount();
+            }
+        }
+        return total;
     }
 
 }
