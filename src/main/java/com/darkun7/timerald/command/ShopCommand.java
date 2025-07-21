@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.HashMap;
 
 public class ShopCommand implements CommandExecutor, Listener {
 
@@ -197,6 +198,16 @@ public class ShopCommand implements CommandExecutor, Listener {
                 return true;
             }
 
+            // Check if buyer has space in inventory
+            ItemStack toGive = item.getItem().clone();
+            toGive.setAmount(item.getQuantity());
+
+            HashMap<Integer, ItemStack> remaining = player.getInventory().addItem(toGive.clone());
+            if (!remaining.isEmpty()) {
+                player.sendMessage("§cNot enough inventory space to complete the purchase.");
+                return true;
+            }
+
             // Try to remove from stash before taking money
             boolean success = sellerShop.removeItemFromStash(item.getItem(), item.getQuantity());
             if (!success) {
@@ -209,8 +220,6 @@ public class ShopCommand implements CommandExecutor, Listener {
             plugin.getTimeraldManager().add(sellerId, item.getPrice());
 
             // Give item to buyer
-            ItemStack toGive = item.getItem().clone();
-            toGive.setAmount(item.getQuantity());
             player.getInventory().addItem(toGive);
 
             player.sendMessage("§aPurchased " + toGive.getType() + " x" + item.getQuantity() + " from " + seller.getName() + ".");
@@ -381,7 +390,7 @@ public class ShopCommand implements CommandExecutor, Listener {
                 int stock = getTotalMatchingItems(shop.getStash(), item.getItem());
 
                 meta.setLore(List.of(
-                    "§7Price: §6" + item.getPrice() + " Timerald",
+                    "§7Price: §f" + item.getPrice() + " §2Timerald",
                     "§7Quantity per purchase: §ax" + item.getQuantity(),
                     "§7Stock available: §e" + stock + " items",
                     "",
@@ -472,6 +481,8 @@ public class ShopCommand implements CommandExecutor, Listener {
             }
             return;
         }
+
+        if (slot == 49) return;
 
         // Otherwise, clicked a shop item — simulate /shop buy
         player.performCommand("shop buy " + ownerName + " " + index);

@@ -2,8 +2,7 @@ package com.darkun7.timerald;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import com.darkun7.timerald.data.TimeraldManager;
-import com.darkun7.timerald.listener.TimeraldListener;
-import com.darkun7.timerald.listener.CustomItemListener;
+import com.darkun7.timerald.listener.*;
 import com.darkun7.timerald.command.DepositCommand;
 import com.darkun7.timerald.command.WithdrawCommand;
 import com.darkun7.timerald.command.TimeraldCommand;
@@ -26,11 +25,13 @@ public final class Timerald extends JavaPlugin {
         saveDefaultConfig();
 
         this.timeraldManager = new TimeraldManager(this);
-        this.shopManager = new ShopManager(this);
+        this.shopManager = new ShopManager(this, this.timeraldManager);
         this.shopManager.loadShops();
 
         getServer().getPluginManager().registerEvents(new TimeraldListener(this), this);
         getServer().getPluginManager().registerEvents(new CustomItemListener(this), this);
+        getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
+        getServer().getPluginManager().registerEvents(new TickItemListener(this), this);
 
         getCommand("deposit").setExecutor(new DepositCommand(this));
         getCommand("withdraw").setExecutor(new WithdrawCommand(this));

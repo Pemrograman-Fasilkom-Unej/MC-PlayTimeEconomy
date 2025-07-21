@@ -1,9 +1,11 @@
 package com.darkun7.timerald.shop;
 
 import com.darkun7.timerald.Timerald;
+import com.darkun7.timerald.data.TimeraldManager;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,23 +17,26 @@ public class ShopManager {
     private final Timerald plugin;
     private final Map<UUID, PlayerShop> shopMap = new HashMap<>();
     private final File shopFolder;
+    private final TimeraldManager timeraldManager;
 
-    public ShopManager(Timerald plugin) {
+    public ShopManager(Timerald plugin, TimeraldManager timeraldManager) {
         this.plugin = plugin;
+        this.timeraldManager = timeraldManager;
         this.shopFolder = new File(plugin.getDataFolder(), "shops");
         if (!shopFolder.exists()) shopFolder.mkdirs();
     }
-
+    
     public PlayerShop getShop(UUID uuid) {
-        return shopMap.get(uuid);
+        return shopMap.get(timeraldManager.resolve(uuid));
     }
 
     public PlayerShop getOrCreateShop(UUID uuid) {
-        return shopMap.computeIfAbsent(uuid, PlayerShop::new);
+        UUID resolved = timeraldManager.resolve(uuid);
+        return shopMap.computeIfAbsent(resolved, PlayerShop::new);
     }
 
-    public PlayerShop openShop(org.bukkit.entity.Player player) {
-        UUID uuid = player.getUniqueId();
+    public PlayerShop openShop(Player player) {
+        UUID uuid = timeraldManager.resolve(player.getUniqueId());
         PlayerShop shop = new PlayerShop(uuid);
         shopMap.put(uuid, shop);
         return shop;
@@ -42,10 +47,11 @@ public class ShopManager {
     }
 
     public void savePlayerShop(UUID uuid) {
-        PlayerShop shop = shopMap.get(uuid);
+        UUID resolved = timeraldManager.resolve(uuid);
+        PlayerShop shop = shopMap.get(resolved);
         if (shop == null) return;
 
-        File file = new File(shopFolder, uuid.toString() + ".yml");
+        File file = new File(shopFolder, resolved.toString() + ".yml");
         YamlConfiguration config = new YamlConfiguration();
 
         // Save listings
@@ -53,7 +59,7 @@ public class ShopManager {
         for (ShopItem item : shop.getListings()) {
             listingData.add(item.serialize());
         }
-        config.set("owner", uuid.toString());
+        config.set("owner", resolved.toString());
         config.set("listings", listingData);
 
         // Save stash
@@ -74,8 +80,9 @@ public class ShopManager {
     public void saveShops() {
         for (Map.Entry<UUID, PlayerShop> entry : shopMap.entrySet()) {
             UUID uuid = entry.getKey();
+            UUID resolved = timeraldManager.resolve(uuid);
             PlayerShop shop = entry.getValue();
-            File file = new File(shopFolder, uuid.toString() + ".yml");
+            File file = new File(shopFolder, resolved.toString() + ".yml");
             YamlConfiguration config = new YamlConfiguration();
 
             // Save listings
@@ -84,7 +91,7 @@ public class ShopManager {
                 listingData.add(item.serialize());
             }
 
-            config.set("owner", uuid.toString());
+            config.set("owner", resolved.toString());
             config.set("listings", listingData);
 
             // Save stash manually as a section
@@ -110,7 +117,8 @@ public class ShopManager {
 
             try {
                 UUID uuid = UUID.fromString(file.getName().replace(".yml", ""));
-                PlayerShop shop = new PlayerShop(uuid);
+                UUID resolved = timeraldManager.resolve(uuid);
+                PlayerShop shop = new PlayerShop(resolved);
 
                 // Load listings
                 List<Map<?, ?>> listingData = config.getMapList("listings");
@@ -125,7 +133,7 @@ public class ShopManager {
                     shop.addToStash(item);
                 }
 
-                shopMap.put(uuid, shop);
+                shopMap.put(resolved, shop);
             } catch (Exception e) {
                 plugin.getLogger().log(Level.WARNING, "Failed to load shop from file: " + file.getName(), e);
             }
