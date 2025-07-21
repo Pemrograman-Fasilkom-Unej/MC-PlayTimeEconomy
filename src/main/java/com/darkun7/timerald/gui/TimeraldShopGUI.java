@@ -62,6 +62,10 @@ public class TimeraldShopGUI implements Listener {
                     if (cost < 0) continue;
 
                     ItemStack item = new ItemStack(Material.CLOCK);
+                    int amount = Math.min(minutes, 64);
+                    if (amount <= 0) amount = 1;
+                    item.setAmount(amount);
+
                     ItemMeta meta = item.getItemMeta();
                     meta.setDisplayName("§eBuy " + minutes + " Minutes");
                     meta.setLore(List.of("§7Cost: §b" + cost + " Timerald", "§8Click to purchase"));
@@ -72,13 +76,14 @@ public class TimeraldShopGUI implements Listener {
             }
         }
 
-        // Elixir in slot 22
-        if (shop.contains("elixir")) {
-            ConfigurationSection elixir = shop.getConfigurationSection("elixir");
+        // Elixir in slot 21
+        if (shop.contains("time-elixir")) {
+            ConfigurationSection elixir = shop.getConfigurationSection("time-elixir");
+            int position = elixir.getInt("position", 21);
             int cost = elixir.getInt("cost", -1);
             if (cost >= 0) {
                 Material material = Material.getMaterial(elixir.getString("material", "POTION"));
-                String name = elixir.getString("name", "§dTime Elixir");
+                String name = elixir.getString("name", "§f<§7Smoke §8Bomb§f>");
                 List<String> lore = elixir.getStringList("lore");
 
                 ItemStack item = new ItemStack(material);
@@ -87,7 +92,43 @@ public class TimeraldShopGUI implements Listener {
                 meta.setLore(List.of("§7Cost: §b" + cost + " Timerald", "§8Click to purchase Elixir"));
                 meta.getPersistentDataContainer().set(shopItemKey, PersistentDataType.INTEGER, 1);
                 item.setItemMeta(meta);
-                gui.setItem(22, item);
+                gui.setItem(position, item);
+            }
+        }
+
+        // Player head in slot 22
+        if (shop.contains("playerhead")) {
+            ConfigurationSection head = shop.getConfigurationSection("playerhead");
+            int position = head.getInt("position", 22);
+            int cost = head.getInt("cost", -1);
+            if (cost >= 0) {
+                ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+                ItemMeta meta = item.getItemMeta();
+                meta.setDisplayName(head.getString("name", "§6Your Head"));
+                meta.setLore(List.of("§7Cost: §b" + cost + " Timerald", "§8Click to purchase"));
+                meta.getPersistentDataContainer().set(shopItemKey, PersistentDataType.INTEGER, 1);
+                item.setItemMeta(meta);
+                gui.setItem(position, item);
+            }
+        }
+
+        // SmokeBomb in slot 22
+        if (shop.contains("smoke-bomb")) {
+            ConfigurationSection elixir = shop.getConfigurationSection("smoke-bomb");
+            int position = elixir.getInt("position", 23);
+            int cost = elixir.getInt("cost", -1);
+            if (cost >= 0) {
+                Material material = Material.getMaterial(elixir.getString("material", "FIREWORK_STAR"));
+                String name = elixir.getString("name", "§f<§7Smoke §8Bomb§f>");
+                List<String> lore = elixir.getStringList("lore");
+
+                ItemStack item = new ItemStack(material);
+                ItemMeta meta = item.getItemMeta();
+                meta.setDisplayName(name);
+                meta.setLore(List.of("§7Cost: §b" + cost + " Timerald", "§8Click to purchase"));
+                meta.getPersistentDataContainer().set(shopItemKey, PersistentDataType.INTEGER, 1);
+                item.setItemMeta(meta);
+                gui.setItem(position, item);
             }
         }
 
@@ -120,10 +161,10 @@ public class TimeraldShopGUI implements Listener {
         ItemMeta meta = clicked.getItemMeta();
         PersistentDataContainer container = meta.getPersistentDataContainer();
 
-        // ✅ Only process if it's a valid shop item
+        // Only process if it's a valid shop item
         if (!container.has(shopItemKey, PersistentDataType.INTEGER)) return;
 
-        // ✅ Remove the tag to prevent re-processing
+        // Remove the tag to prevent re-processing
         container.remove(shopItemKey);
         clicked.setItemMeta(meta);
         player.closeInventory();
@@ -158,7 +199,7 @@ public class TimeraldShopGUI implements Listener {
             }
 
             // Handle elixir
-            ConfigurationSection elixirSection = plugin.getConfig().getConfigurationSection("shop.elixir");
+            ConfigurationSection elixirSection = plugin.getConfig().getConfigurationSection("shop.time-elixir");
             if (elixirSection != null && name.equals(elixirSection.getString("name"))) {
                 int cost = elixirSection.getInt("cost", -1);
                 if (cost < 0) {
@@ -182,6 +223,66 @@ public class TimeraldShopGUI implements Listener {
                 player.getInventory().addItem(item);
                 player.sendMessage("§aPurchased §dTime Elixir §afor §b" + cost + " Timerald.");
             }
+
+            // Handle player head purchase
+            ConfigurationSection headSection = plugin.getConfig().getConfigurationSection("shop.playerhead");
+            if (headSection != null && name.equals(headSection.getString("name"))) {
+                int cost = headSection.getInt("cost", -1);
+                if (cost < 0) {
+                    player.sendMessage("§cInvalid head configuration.");
+                    return;
+                }
+
+                if (manager.get(uuid) < cost) {
+                    player.sendMessage("§cNot enough Timerald.");
+                    return;
+                }
+
+                // Create the player's head item
+                ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+                ItemMeta headMeta = head.getItemMeta();
+                headMeta.setDisplayName("§f" + player.getName() + "'s Head");
+                headMeta.setLore(headSection.getStringList("lore"));
+                ((org.bukkit.inventory.meta.SkullMeta) headMeta).setOwningPlayer(player);
+                head.setItemMeta(headMeta);
+
+                manager.subtract(uuid, cost);
+                player.getInventory().addItem(head);
+                player.sendMessage("§aPurchased your head for §b" + cost + " Timerald.");
+            }
+
+            // Handle smoke bomb purchase
+            ConfigurationSection bombSection = plugin.getConfig().getConfigurationSection("shop.smoke-bomb");
+            if (bombSection != null && name.equals(bombSection.getString("name"))) {
+                int cost = bombSection.getInt("cost", -1);
+                if (cost < 0) {
+                    player.sendMessage("§cInvalid Smoke Bomb configuration.");
+                    return;
+                }
+
+                if (manager.get(uuid) < cost) {
+                    player.sendMessage("§cNot enough Timerald.");
+                    return;
+                }
+
+                String materialStr = bombSection.getString("material", "FIREWORK_STAR");
+                Material material = Material.getMaterial(materialStr.toUpperCase());
+                if (material == null) {
+                    player.sendMessage("§cInvalid material for Smoke Bomb.");
+                    return;
+                }
+
+                ItemStack bomb = new ItemStack(material);
+                ItemMeta bombMeta = bomb.getItemMeta();
+                bombMeta.setDisplayName(bombSection.getString("name"));
+                bombMeta.setLore(bombSection.getStringList("lore"));
+                bomb.setItemMeta(bombMeta);
+
+                manager.subtract(uuid, cost);
+                player.getInventory().addItem(bomb);
+                player.sendMessage("§aPurchased Smoke Bomb for §b" + cost + " Timerald.");
+            }
+
         }, 1L);
     }
 }

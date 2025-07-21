@@ -13,6 +13,9 @@ commands:
   withdraw:
     description: Withdraw emeralds from Timerald
     usage: /withdraw <amount>
+  shop:
+    description: Manage player shop
+    usage: /shop
 
 permissions:
   timerald.use:

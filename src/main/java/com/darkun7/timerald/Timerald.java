@@ -2,18 +2,22 @@ package com.darkun7.timerald;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import com.darkun7.timerald.data.TimeraldManager;
-import com.darkun7.timerald.listener.TimeraldListener;
-import com.darkun7.timerald.listener.CustomItemListener;
+import com.darkun7.timerald.listener.*;
 import com.darkun7.timerald.command.DepositCommand;
 import com.darkun7.timerald.command.WithdrawCommand;
 import com.darkun7.timerald.command.TimeraldCommand;
 import com.darkun7.timerald.command.TimeraldTabCompleter;
 import com.darkun7.timerald.gui.TimeraldShopGUI;
 
+import com.darkun7.timerald.command.ShopCommand;
+import com.darkun7.timerald.shop.ShopManager;
+
+
 public final class Timerald extends JavaPlugin {
 
     private static Timerald instance;
     private TimeraldManager timeraldManager;
+    private ShopManager shopManager;
 
     @Override
     public void onEnable() {
@@ -21,19 +25,32 @@ public final class Timerald extends JavaPlugin {
         saveDefaultConfig();
 
         this.timeraldManager = new TimeraldManager(this);
+        this.shopManager = new ShopManager(this, this.timeraldManager);
+        this.shopManager.loadShops();
 
         getServer().getPluginManager().registerEvents(new TimeraldListener(this), this);
         getServer().getPluginManager().registerEvents(new CustomItemListener(this), this);
+        getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
+        getServer().getPluginManager().registerEvents(new TickItemListener(this), this);
 
         getCommand("deposit").setExecutor(new DepositCommand(this));
         getCommand("withdraw").setExecutor(new WithdrawCommand(this));
         getCommand("timerald").setExecutor(new TimeraldCommand(this));
         getCommand("timerald").setTabCompleter(new TimeraldTabCompleter());
+        getCommand("shop").setExecutor(new ShopCommand(this, this.shopManager));
         
         new TimeraldShopGUI(this);
 
         getLogger().info("Timerald plugin enabled.");
     }
+
+    @Override
+    public void onDisable() {
+        if (this.shopManager != null) {
+            this.shopManager.saveShops();
+        }
+    }
+
 
 
     public static Timerald getInstance() {

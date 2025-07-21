@@ -5,19 +5,40 @@ shop:
     "10": 40
     "20": 64
 
-  elixir:
+  time-elixir:
     type: custom-item
     cost: 64
     material: POTION
     name: "§f<§aTime §2Elixir§f>"
+    position: 21
+    minutes: 20
     lore:
       - "§7Right click to use"
       - "§cReduce 20 minutes of playtime"
 
-time-elixir:
-  material: POTION
-  name: "§f<§aTime §2Elixir§f>"
-  minutes: 20
-  lore:
-    - "§7Right click to use"
-    - "§cReduce 20 minutes of playtime"
+  playerhead:
+    cost: 32
+    name: "§6Your Head"
+    position: 22
+    lore:
+      - "§7Wear it with pride"
+    effects:
+      - RESISTANCE:3600:1
+      - LUCK:3600:1
+      - GLOWING:3600:1
+
+  smoke-bomb:
+    type: on-use
+    cost: 4
+    material: FIREWORK_STAR
+    name: "§f<§7Smoke §8Bomb§f>"
+    position: 23
+    lore:
+      - "§7Right click to vanish"
+      - "§8Grants invisibility and speed"
+    effects:
+      - INVISIBILITY:16:1
+      - SPEED:16:1
+    particles:
+      type: LARGE_SMOKE
+      amount: 20

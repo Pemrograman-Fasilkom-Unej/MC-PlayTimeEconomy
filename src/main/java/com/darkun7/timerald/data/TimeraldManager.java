@@ -40,7 +40,7 @@ public class TimeraldManager {
     }
 
     // Resolves UUID alias (Bedrock -> Java)
-    private UUID resolve(UUID uuid) {
+    public UUID resolve(UUID uuid) {
         return aliasMap.getOrDefault(uuid, uuid);
     }
 
