@@ -19,6 +19,7 @@ public class CustomItemListener implements Listener {
 
     public CustomItemListener(Timerald plugin) {
         consumables.add(new TimeElixir(plugin));
+        consumables.add(new NymphSnack(plugin));
         // later: consumables.add(new AnotherItem(...));
     }
 

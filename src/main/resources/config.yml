@@ -6,15 +6,15 @@ shop:
     "20": 64
 
   time-elixir:
-    type: custom-item
+    type: consumable
     cost: 64
     material: POTION
     name: "§f<§aTime §2Elixir§f>"
     position: 21
     minutes: 20
     lore:
-      - "§7Right click to use"
-      - "§cReduce 20 minutes of playtime"
+      - "§7Drink it to use"
+      - "§7Reduce §f20§7 minutes of playtime"
 
   playerhead:
     cost: 32
@@ -34,11 +34,24 @@ shop:
     name: "§f<§7Smoke §8Bomb§f>"
     position: 23
     lore:
-      - "§7Right click to vanish"
-      - "§8Grants invisibility and speed"
+      - "§7Right click to use"
+      - "§7Grants §finvisibility§7 and §fspeed"
     effects:
       - INVISIBILITY:16:1
       - SPEED:16:1
     particles:
       type: LARGE_SMOKE
       amount: 20
+
+  nymph-snack:
+    type: consumable
+    cost: 64
+    material: DRIED_KELP
+    name: "§f<§bNymph's§3 snack§f>"
+    position: 24
+    lore:
+      - "§7Drink it to use"
+      - "§7Grants §fwater breathing and §7night vision"
+    effects:
+      - WATER_BREATHING:40:1
+      - NIGHT_VISION:40:1
