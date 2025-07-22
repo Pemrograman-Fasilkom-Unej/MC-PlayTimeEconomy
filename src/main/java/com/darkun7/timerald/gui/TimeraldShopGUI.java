@@ -28,6 +28,13 @@ public class TimeraldShopGUI implements Listener {
 
     private final Timerald plugin;
     private final NamespacedKey shopItemKey;
+    public static final List<String> ITEM_KEYS = List.of(
+            "luminous-lantern",
+            "time-elixir",
+            "playerhead",
+            "smoke-bomb",
+            "nymph-snack"
+        );
 
     public TimeraldShopGUI(Timerald plugin) {
         this.plugin = plugin;
@@ -97,7 +104,7 @@ public class TimeraldShopGUI implements Listener {
         }
 
         // Configurable item handler
-        for (String key : List.of("time-elixir", "playerhead", "smoke-bomb", "nymph-snack")) {
+        for (String key : ITEM_KEYS) {
             if (shop.contains(key)) {
                 ConfigurationSection section = shop.getConfigurationSection(key);
                 int position = section.getInt("position", 21);
@@ -196,7 +203,7 @@ public class TimeraldShopGUI implements Listener {
                 return;
             }
 
-            for (String key : List.of("time-elixir", "playerhead", "smoke-bomb", "nymph-snack")) {
+            for (String key : ITEM_KEYS) {
                 ConfigurationSection section = shop.getConfigurationSection(key);
                 if (section == null || !name.equals(section.getString("name"))) continue;
 

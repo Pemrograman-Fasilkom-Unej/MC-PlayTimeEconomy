@@ -3,6 +3,7 @@ package com.darkun7.timerald.listener;
 import com.darkun7.timerald.Timerald;
 import com.darkun7.timerald.item.TickItemEffect;
 import com.darkun7.timerald.item.PlayerHeadEffect;
+import com.darkun7.timerald.item.LuminousLanternEffect;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -24,6 +25,7 @@ public class TickItemListener implements Listener {
 
         // Register passive tick effects
         tickEffects.add(new PlayerHeadEffect(plugin));
+        tickEffects.add(new LuminousLanternEffect(plugin));
     }
 
     @EventHandler

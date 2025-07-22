@@ -37,6 +37,17 @@ shop:
         - "§7Click to buy"
         - "§fCosts §c64 §fTimerald"
 
+  luminous-lantern:
+    type: consumable
+    cost: 128
+    material: SOUL_LANTERN
+    name: "§f<§bLuminous §9Lantern§f>"
+    position: 20
+    lore:
+      - "§7Spark of deceased soul of miner"
+    effects:
+      - HASTE:3600:1
+
   time-elixir:
     type: consumable
     cost: 64
@@ -61,6 +72,19 @@ shop:
       - LUCK:3600:1
       - GLOWING:3600:1
 
+  nymph-snack:
+    type: consumable
+    cost: 16
+    material: DRIED_KELP
+    name: "§f<§bNymph's§3 snack§f>"
+    position: 24
+    lore:
+      - "§7Drink it to use"
+      - "§7Grants §fwater breathing and §7night vision"
+    effects:
+      - WATER_BREATHING:40:1
+      - NIGHT_VISION:40:1
+
   smoke-bomb:
     type: on-use
     cost: 4
@@ -76,16 +100,3 @@ shop:
     particles:
       type: LARGE_SMOKE
       amount: 20
-
-  nymph-snack:
-    type: consumable
-    cost: 16
-    material: DRIED_KELP
-    name: "§f<§bNymph's§3 snack§f>"
-    position: 24
-    lore:
-      - "§7Drink it to use"
-      - "§7Grants §fwater breathing and §7night vision"
-    effects:
-      - WATER_BREATHING:40:1
-      - NIGHT_VISION:40:1

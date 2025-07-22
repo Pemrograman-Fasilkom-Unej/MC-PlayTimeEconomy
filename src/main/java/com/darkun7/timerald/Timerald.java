@@ -32,6 +32,7 @@ public final class Timerald extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CustomItemListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
         getServer().getPluginManager().registerEvents(new TickItemListener(this), this);
+        getServer().getPluginManager().registerEvents(new PreventPlacementListener(this), this);
 
         getCommand("deposit").setExecutor(new DepositCommand(this));
         getCommand("withdraw").setExecutor(new WithdrawCommand(this));
@@ -50,8 +51,6 @@ public final class Timerald extends JavaPlugin {
             this.shopManager.saveShops();
         }
     }
-
-
 
     public static Timerald getInstance() {
         return instance;
