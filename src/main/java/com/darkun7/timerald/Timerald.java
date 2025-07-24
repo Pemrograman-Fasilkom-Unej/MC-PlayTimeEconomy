@@ -8,10 +8,12 @@ import com.darkun7.timerald.command.WithdrawCommand;
 import com.darkun7.timerald.command.TimeraldCommand;
 import com.darkun7.timerald.command.TimeraldTabCompleter;
 import com.darkun7.timerald.gui.TimeraldShopGUI;
-
 import com.darkun7.timerald.command.ShopCommand;
+import com.darkun7.timerald.command.ShopTabCompleter;
+
 import com.darkun7.timerald.shop.ShopManager;
 
+import java.io.File; 
 
 public final class Timerald extends JavaPlugin {
 
@@ -24,6 +26,20 @@ public final class Timerald extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
 
+        String currentVersion = getConfig().getString("config-version", "0");
+        String expectedVersion = "240725-test3";
+        if (currentVersion != expectedVersion) {
+            getLogger().warning("Outdated config.yml detected! Regenerating with default values...");
+
+            File configFile = new File(getDataFolder(), "config.yml");
+            if (configFile.exists()) {
+                configFile.delete();
+            }
+
+            saveResource("config.yml", false);
+            reloadConfig();
+        }
+
         this.timeraldManager = new TimeraldManager(this);
         this.shopManager = new ShopManager(this, this.timeraldManager);
         this.shopManager.loadShops();
@@ -32,12 +48,14 @@ public final class Timerald extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CustomItemListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
         getServer().getPluginManager().registerEvents(new TickItemListener(this), this);
+        getServer().getPluginManager().registerEvents(new PreventPlacementListener(this), this);
 
         getCommand("deposit").setExecutor(new DepositCommand(this));
         getCommand("withdraw").setExecutor(new WithdrawCommand(this));
         getCommand("timerald").setExecutor(new TimeraldCommand(this));
         getCommand("timerald").setTabCompleter(new TimeraldTabCompleter());
         getCommand("shop").setExecutor(new ShopCommand(this, this.shopManager));
+        getCommand("shop").setTabCompleter(new ShopTabCompleter(this.shopManager));
         
         new TimeraldShopGUI(this);
 
@@ -50,8 +68,6 @@ public final class Timerald extends JavaPlugin {
             this.shopManager.saveShops();
         }
     }
-
-
 
     public static Timerald getInstance() {
         return instance;

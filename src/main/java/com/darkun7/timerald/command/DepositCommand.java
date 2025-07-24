@@ -1,7 +1,6 @@
 package com.darkun7.timerald.command;
 
 import com.darkun7.timerald.Timerald;
-import com.darkun7.timerald.data.TimeraldManager;
 import org.bukkit.Material;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -24,22 +23,34 @@ public class DepositCommand implements CommandExecutor {
             return true;
         }
 
-        ItemStack inHand = player.getInventory().getItemInMainHand();
-
         UUID uuid = player.getUniqueId();
-        int amount = inHand.getAmount();
-        int value = 0;
+        int emeralds = 0;
+        int emeraldBlocks = 0;
 
-        if (inHand.getType() == Material.EMERALD) value = amount;
-        else if (inHand.getType() == Material.EMERALD_BLOCK) value = amount * 9;
-        else {
-            player.sendMessage("§cOnly emeralds or emerald blocks are accepted.");
+        // Loop through inventory
+        for (int i = 0; i < player.getInventory().getSize(); i++) {
+            ItemStack item = player.getInventory().getItem(i);
+
+            if (item == null || item.getType() == Material.AIR) continue;
+
+            if (item.getType() == Material.EMERALD) {
+                emeralds += item.getAmount();
+                player.getInventory().clear(i);
+            } else if (item.getType() == Material.EMERALD_BLOCK) {
+                emeraldBlocks += item.getAmount();
+                player.getInventory().clear(i);
+            }
+        }
+
+        int totalTimerald = emeralds + (emeraldBlocks * 9);
+        if (totalTimerald == 0) {
+            player.sendMessage("§cNo emeralds or emerald blocks to deposit.");
             return true;
         }
 
-        plugin.getTimeraldManager().add(uuid, value);
-        player.getInventory().setItemInMainHand(null);
-        player.sendMessage("§aDeposited §f" + value + " Timerald§a.");
+        plugin.getTimeraldManager().add(uuid, totalTimerald);
+        player.sendMessage("§aDeposited §b" + totalTimerald + " Timerald§a (" +
+                emeralds + " emeralds, " + emeraldBlocks + " emerald blocks).");
         return true;
     }
 }

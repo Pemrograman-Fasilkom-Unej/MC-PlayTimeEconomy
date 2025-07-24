@@ -21,6 +21,7 @@ public class TimeraldTabCompleter implements TabCompleter {
 
         if (args.length == 1) {
             completions.add("send");
+            completions.add("top");
             return completions;
         }
 

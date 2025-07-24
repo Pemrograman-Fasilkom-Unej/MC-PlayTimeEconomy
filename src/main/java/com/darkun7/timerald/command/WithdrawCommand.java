@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 import java.util.UUID;
 
@@ -47,26 +48,26 @@ public class WithdrawCommand implements CommandExecutor {
         int balance = manager.get(uuid);
 
         if (balance < requested) {
-            player.sendMessage("§cYou only have " + balance + " Timerald.");
+            player.sendMessage("§cYou only have §b" + balance + " Timerald§c.");
             return true;
         }
 
-        // Prefer emerald blocks if enough
-        ItemStack result;
-        if (requested % 9 == 0) {
-            result = new ItemStack(Material.EMERALD_BLOCK, requested / 9);
-        } else {
-            result = new ItemStack(Material.EMERALD, requested);
-        }
+        // Create item: prefer emerald blocks if divisible by 9
+        ItemStack result = (requested % 9 == 0)
+                ? new ItemStack(Material.EMERALD_BLOCK, requested / 9)
+                : new ItemStack(Material.EMERALD, requested);
 
-        if (player.getInventory().getItemInMainHand().getType() != Material.AIR) {
-            player.sendMessage("§cYour hand must be empty.");
+        PlayerInventory inventory = player.getInventory();
+        int emptySlot = inventory.firstEmpty();
+
+        if (emptySlot == -1) {
+            player.sendMessage("§cYour inventory is full.");
             return true;
         }
 
-        player.getInventory().setItemInMainHand(result);
+        inventory.setItem(emptySlot, result);
         manager.subtract(uuid, requested);
-        player.sendMessage("§aWithdrew " + requested + " Timerald.");
+        player.sendMessage("§aWithdrew §b" + requested + " Timerald§a.");
         return true;
     }
 }

@@ -8,7 +8,12 @@ import com.darkun7.timerald.Timerald;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 public class TimeraldManager {
     private final Timerald plugin;
@@ -84,5 +89,12 @@ public class TimeraldManager {
                 plugin.getLogger().warning("Invalid UUID in Timerald data file: " + key);
             }
         }
+    }
+
+    public List<Map.Entry<UUID, Integer>> getTopTimeralds(int limit) {
+        return balances.entrySet().stream()
+                .sorted(Map.Entry.<UUID, Integer>comparingByValue(Comparator.reverseOrder()))
+                .limit(limit)
+                .collect(Collectors.toList());
     }
 }
