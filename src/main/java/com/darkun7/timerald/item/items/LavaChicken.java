@@ -5,6 +5,7 @@ import com.darkun7.timerald.item.ConsumableItemHandler;
 import com.darkun7.limiter.PlayTimeLimiter;
 import com.darkun7.limiter.api.PlayTimeLimiterAPI;
 
+
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -17,20 +18,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class TimeElixir implements ConsumableItemHandler {
+public class LavaChicken implements ConsumableItemHandler {
 
     private final Timerald plugin;
     private final String displayName;
     private final List<PotionEffect> effects;
 
-    public TimeElixir(Timerald plugin) {
+    public LavaChicken(Timerald plugin) {
         this.plugin = plugin;
-
+        
         this.effects = new ArrayList<>();
-        ConfigurationSection elixir = plugin.getConfig().getConfigurationSection("shop.time-elixir");
-        this.displayName = elixir.getString("name");
+        ConfigurationSection consumable = plugin.getConfig().getConfigurationSection("shop.lava-chicken");
+        this.displayName = consumable.getString("name");
 
-        for (String line : elixir.getStringList("effects")) {
+        for (String line : consumable.getStringList("effects")) {
             try {
                 String[] parts = line.split(":");
                 PotionEffectType type = PotionEffectType.getByName(parts[0].toUpperCase());
@@ -47,12 +48,12 @@ public class TimeElixir implements ConsumableItemHandler {
 
     @Override
     public boolean matches(ItemStack item) {
-        ConfigurationSection elixir = plugin.getConfig().getConfigurationSection("shop.time-elixir");
-        if (elixir == null || item == null || !item.hasItemMeta()) return false;
+        ConfigurationSection consumable = plugin.getConfig().getConfigurationSection("shop.lava-chicken");
+        if (consumable == null || item == null || !item.hasItemMeta()) return false;
 
-        String name = elixir.getString("name");
-        String materialStr = elixir.getString("material", "POTION");
-        List<String> lore = elixir.getStringList("lore");
+        String name = consumable.getString("name");
+        String materialStr = consumable.getString("material", "COOKED_CHICKEN");
+        List<String> lore = consumable.getStringList("lore");
 
         Material material = Material.getMaterial(materialStr.toUpperCase());
         if (item.getType() != material) return false;
@@ -63,23 +64,15 @@ public class TimeElixir implements ConsumableItemHandler {
 
     @Override
     public void onConsume(Player player, ItemStack item) {
-        ConfigurationSection elixir = plugin.getConfig().getConfigurationSection("shop.time-elixir");
-        int minutes = elixir.getInt("minutes", 20);
-        String name = elixir.getString("name");
-
-        UUID uuid = player.getUniqueId();
-        PlayTimeLimiterAPI api = PlayTimeLimiter.getInstance().getAPI();
-        api.reduceDailyUsed(uuid, minutes);
-
         double maxHealth = player.getMaxHealth();
-        player.setHealth(Math.min(player.getHealth() + 6.0, maxHealth));
-        player.setFoodLevel(Math.min(player.getFoodLevel() + 6, 20));
-        player.setSaturation(Math.min(player.getSaturation() + 4, 20));
+        player.setHealth(Math.min(player.getHealth() + 4.0, maxHealth));
+        player.setFoodLevel(Math.min(player.getFoodLevel() + 5, 20));
+        player.setSaturation(Math.min(player.getSaturation() + 3, 20));
 
         for (PotionEffect effect : effects) {
             player.addPotionEffect(effect);
         }
 
-        player.sendMessage("§aYou consumed a " + displayName + "§a and reduced §f" + minutes + " minute(s) §aof playtime.");
+        player.sendMessage("§aYou consumed a " + displayName +".");
     }
 }

@@ -16,6 +16,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.ChatColor;
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TimeraldShopGUI implements Listener {
 
@@ -33,8 +37,12 @@ public class TimeraldShopGUI implements Listener {
             "time-elixir",
             "playerhead",
             "smoke-bomb",
-            "nymph-snack"
+            "nymph-snack",
+            "escape-feather",
+            "lava-chicken"
         );
+    public static final String actionPurchase = "§8Click to purchase";
+    private final Set<UUID> recentlyClicked = new HashSet<>();
 
     public TimeraldShopGUI(Timerald plugin) {
         this.plugin = plugin;
@@ -83,13 +91,8 @@ public class TimeraldShopGUI implements Listener {
                 if (meta != null) {
                     meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
                             entry.getString("name", minutes + " Minutes")));
+                    meta.setLore(List.of(entry.getStringList("lore").get(1),"§7Cost: §b" + cost + " Timerald", actionPurchase));
 
-                    List<String> lore = entry.getStringList("lore");
-                    if (lore != null) {
-                        meta.setLore(lore.stream()
-                                .map(line -> ChatColor.translateAlternateColorCodes('&', line))
-                                .collect(Collectors.toList()));
-                    }
                     meta.getPersistentDataContainer().set(shopItemKey, PersistentDataType.INTEGER, 1);
                     
                     int amount = Math.min(minutes, 64);
@@ -120,7 +123,12 @@ public class TimeraldShopGUI implements Listener {
                 ItemStack item = new ItemStack(material);
                 ItemMeta meta = item.getItemMeta();
                 meta.setDisplayName(name);
-                meta.setLore(List.of("§7Cost: §b" + cost + " Timerald", "§8Click to purchase"));
+                meta.setLore(List.of(section.getStringList("lore").get(1),"§7Cost: §b" + cost + " Timerald", actionPurchase));
+                boolean enchanted = section.getBoolean("enchanted", false);
+                if (enchanted) {
+                    meta.addEnchant(Enchantment.INFINITY, 1, true);
+                    meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                }
                 meta.getPersistentDataContainer().set(shopItemKey, PersistentDataType.INTEGER, 1);
                 item.setItemMeta(meta);
 
@@ -153,11 +161,18 @@ public class TimeraldShopGUI implements Listener {
         ItemStack clicked = e.getCurrentItem();
         if (clicked == null || !clicked.hasItemMeta() || !clicked.getItemMeta().hasDisplayName()) return;
         int slot = e.getSlot();
+
         // Bukkit.getLogger().info("[DEBUG] Clicked slot: " + slot);
 
         UUID uuid = player.getUniqueId();
         ItemMeta meta = clicked.getItemMeta();
         PersistentDataContainer container = meta.getPersistentDataContainer();
+
+        if (recentlyClicked.contains(uuid)) {
+            // player.sendMessage("§ePlease wait before making another purchase.");
+            return;
+        }
+        recentlyClicked.add(uuid);
 
         if (!container.has(shopItemKey, PersistentDataType.INTEGER)) return;
 
@@ -237,12 +252,19 @@ public class TimeraldShopGUI implements Listener {
                     item.setItemMeta(itemMeta);
                 }
 
+                boolean enchanted = section.getBoolean("enchanted", false);
+                if (enchanted) {
+                    itemMeta.addEnchant(Enchantment.INFINITY, 1, true);
+                    itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                }
 
                 item.setItemMeta(itemMeta);
                 manager.subtract(uuid, cost);
                 player.getInventory().addItem(item);
                 player.sendMessage("§aPurchased §f" + section.getString("name") + " §afor §b" + cost + " Timerald.");
+
+                recentlyClicked.remove(uuid);
             }
-        }, 1L);
+        }, 10L);
     }
 }

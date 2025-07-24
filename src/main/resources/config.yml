@@ -1,49 +1,53 @@
+config-version: "240725-test3"
 shop:
   playtime:
     "1":
       cost: 4
       material: CLOCK
-      name: "§f[Reduce daily playtime §61 §fMmnute]"
+      name: "§f[§62 §fminute]"
       position: 10
-      minutes: 1
+      minutes: 2
       lore:
         - "§7Click to buy"
-        - "§fCosts §c4 §fTimerald"
+        - "§fReduce daily playtime §62 §fminute"
     "5":
       cost: 20
       material: CLOCK
-      name: "§f[Reduce daily playtime §65 §fMmnutes]"
+      name: "§f[§610 §fminute]"
       position: 11
-      minutes: 5
-      lore:
-        - "§7Click to buy"
-        - "§fCosts §c20 §fTimerald"
-    "10":
-      cost: 40
-      material: CLOCK
-      name: "§f[Reduce daily playtime §610 §fminutes]"
-      position: 12
       minutes: 10
       lore:
         - "§7Click to buy"
-        - "§fCosts §c40 §fTimerald"
-    "20":
-      cost: 64
+        - "§fReduce daily playtime §610 §fminute"
+    "10":
+      cost: 40
       material: CLOCK
-      name: "§f[Reduce daily playtime §620 §fminutes]"
-      position: 13
+      name: "§f[§620 §fminutes]"
+      position: 12
       minutes: 20
       lore:
         - "§7Click to buy"
-        - "§fCosts §c64 §fTimerald"
+        - "§fReduce daily playtime §620 §fminutes"
+    "20":
+      cost: 64
+      material: CLOCK
+      name: "§f[§640 §fminutes]"
+      position: 13
+      minutes: 40
+      lore:
+        - "§7Click to buy"
+        - "§fReduce daily playtime §640 §fminutes"
 
   luminous-lantern:
     type: consumable
     cost: 128
     material: SOUL_LANTERN
     name: "§f<§bLuminous §9Lantern§f>"
-    position: 20
+    position: 19
+    enchanted: true
     lore:
+      - "§7Hold it carefully"
+      - "§7Illuminate the surroundings"
       - "§7Spark of deceased soul of miner"
     effects:
       - HASTE:3600:1
@@ -53,47 +57,80 @@ shop:
     cost: 64
     material: POTION
     name: "§f<§aTime §2Elixir§f>"
-    position: 21
-    minutes: 20
+    position: 20
+    enchanted: true
+    minutes: 30
     lore:
       - "§7Drink it to use"
-      - "§7Reduce §f20§7 minutes of playtime"
+      - "§7Reduce §f30§7 minutes of playtime"
+    effects:
+      - "ABSORPTION:600:5"
+      - "REGENERATION:30:1"
 
   playerhead:
     type: wearable
     material: PLAYER_HEAD
     cost: 32
     name: "§6Your Head"
-    position: 22
+    position: 21
     lore:
       - "§7Wear it with pride"
+      - "§7Increase self confidence!"
     effects:
       - RESISTANCE:3600:1
       - LUCK:3600:1
       - GLOWING:3600:1
+  
+  escape-feather:
+    type: on-use
+    material: FEATHER
+    name: "§f<§6Escape §eFeather§f>"
+    position: 22
+    enchanted: true
+    cost: 32
+    lore:
+      - "§7Right click to use"
+      - "§7Teleport back to your bed or world spawn."
+      - "§eOnly usable in the §4Nether §eand §dEnd." 
+
+  lava-chicken:
+    type: consumable
+    cost: 24
+    material: COOKED_CHICKEN
+    name: "§f<§cLava §6Chicken§f>"
+    position: 23
+    enchanted: true
+    lore:
+      - "§7Eat it to use"
+      - "§7Grants §ffire resist §7and §fspeed"
+    effects:
+      - FIRE_RESISTANCE:120:1
+      - SPEED:60:2
 
   nymph-snack:
     type: consumable
     cost: 16
     material: DRIED_KELP
-    name: "§f<§bNymph's§3 snack§f>"
+    name: "§f<§bNymph's §3snack§f>"
     position: 24
+    enchanted: true
     lore:
-      - "§7Drink it to use"
-      - "§7Grants §fwater breathing and §7night vision"
+      - "§7Eat it to use"
+      - "§7Grants §fwater breathing §7and §fnight vision"
     effects:
-      - WATER_BREATHING:40:1
-      - NIGHT_VISION:40:1
+      - WATER_BREATHING:90:1
+      - NIGHT_VISION:90:1
 
   smoke-bomb:
     type: on-use
     cost: 4
     material: FIREWORK_STAR
     name: "§f<§7Smoke §8Bomb§f>"
-    position: 23
+    position: 25
+    enchanted: true
     lore:
       - "§7Right click to use"
-      - "§7Grants §finvisibility§7 and §fspeed"
+      - "§7Grants §finvisibility §7and §fspeed"
     effects:
       - INVISIBILITY:16:1
       - SPEED:16:1

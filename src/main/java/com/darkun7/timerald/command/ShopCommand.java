@@ -27,6 +27,8 @@ import java.util.regex.Pattern;
 import java.util.List;
 import java.util.UUID;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ShopCommand implements CommandExecutor, Listener {
 
@@ -35,6 +37,7 @@ public class ShopCommand implements CommandExecutor, Listener {
 
     private static final String SHOP_GUI_PREFIX = "§2Shops §7(";
     private static final String PLAYER_SHOP_GUI_PREFIX = "§2Shop: §e";
+    private final Set<UUID> recentlyClicked = new HashSet<>();
 
     private final int SHOP_OPEN_COST = 10; // Timerald required to open shop
 
@@ -484,8 +487,15 @@ public class ShopCommand implements CommandExecutor, Listener {
 
         if (slot == 49) return;
 
+        UUID uuid = player.getUniqueId();
+
+        if (recentlyClicked.contains(uuid)) {
+            // player.sendMessage("§ePlease wait before making another purchase.");
+            return;
+        }
         // Otherwise, clicked a shop item — simulate /shop buy
         player.performCommand("shop buy " + ownerName + " " + index);
+        recentlyClicked.remove(uuid);
         player.closeInventory();
     }
 

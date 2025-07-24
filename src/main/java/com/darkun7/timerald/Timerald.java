@@ -12,6 +12,7 @@ import com.darkun7.timerald.gui.TimeraldShopGUI;
 import com.darkun7.timerald.command.ShopCommand;
 import com.darkun7.timerald.shop.ShopManager;
 
+import java.io.File; 
 
 public final class Timerald extends JavaPlugin {
 
@@ -23,6 +24,20 @@ public final class Timerald extends JavaPlugin {
     public void onEnable() {
         instance = this;
         saveDefaultConfig();
+
+        String currentVersion = getConfig().getString("config-version", "0");
+        String expectedVersion = "240725-test3";
+        if (currentVersion != expectedVersion) {
+            getLogger().warning("Outdated config.yml detected! Regenerating with default values...");
+
+            File configFile = new File(getDataFolder(), "config.yml");
+            if (configFile.exists()) {
+                configFile.delete();
+            }
+
+            saveResource("config.yml", false);
+            reloadConfig();
+        }
 
         this.timeraldManager = new TimeraldManager(this);
         this.shopManager = new ShopManager(this, this.timeraldManager);

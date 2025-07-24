@@ -21,16 +21,18 @@ import java.util.UUID;
 public class NymphSnack implements ConsumableItemHandler {
 
     private final Timerald plugin;
+    private final String displayName;
     private final List<PotionEffect> effects;
 
 
     public NymphSnack(Timerald plugin) {
         this.plugin = plugin;
-        // Load effects
-        this.effects = new ArrayList<>();
-        ConfigurationSection snack = plugin.getConfig().getConfigurationSection("shop.nymph-snack");
 
-        for (String line : snack.getStringList("effects")) {
+        this.effects = new ArrayList<>();
+        ConfigurationSection consumable = plugin.getConfig().getConfigurationSection("shop.nymph-snack");
+        this.displayName = consumable.getString("name");
+
+        for (String line : consumable.getStringList("effects")) {
             try {
                 String[] parts = line.split(":");
                 PotionEffectType type = PotionEffectType.getByName(parts[0].toUpperCase());
@@ -47,12 +49,12 @@ public class NymphSnack implements ConsumableItemHandler {
 
     @Override
     public boolean matches(ItemStack item) {
-        ConfigurationSection snack = plugin.getConfig().getConfigurationSection("shop.nymph-snack");
-        if (snack == null || item == null || !item.hasItemMeta()) return false;
+        ConfigurationSection consumable = plugin.getConfig().getConfigurationSection("shop.nymph-snack");
+        if (consumable == null || item == null || !item.hasItemMeta()) return false;
 
-        String name = snack.getString("name");
-        String materialStr = snack.getString("material", "DRIED_KELP");
-        List<String> lore = snack.getStringList("lore");
+        String name = consumable.getString("name");
+        String materialStr = consumable.getString("material", "DRIED_KELP");
+        List<String> lore = consumable.getStringList("lore");
 
         Material material = Material.getMaterial(materialStr.toUpperCase());
         if (item.getType() != material) return false;
@@ -63,14 +65,6 @@ public class NymphSnack implements ConsumableItemHandler {
 
     @Override
     public void onConsume(Player player, ItemStack item) {
-        ConfigurationSection snack = plugin.getConfig().getConfigurationSection("shop.nymph-snack");
-        int minutes = snack.getInt("minutes", 20);
-        String name = snack.getString("name");
-
-        UUID uuid = player.getUniqueId();
-        PlayTimeLimiterAPI api = PlayTimeLimiter.getInstance().getAPI();
-        api.reduceDailyUsed(uuid, minutes);
-
         double maxHealth = player.getMaxHealth();
         player.setHealth(Math.min(player.getHealth() + 3.0, maxHealth));
         player.setFoodLevel(Math.min(player.getFoodLevel() + 3, 20));
@@ -80,6 +74,6 @@ public class NymphSnack implements ConsumableItemHandler {
             player.addPotionEffect(effect);
         }
 
-        player.sendMessage("§aYou consumed a " + name +".");
+        player.sendMessage("§aYou consumed a " + displayName +"§a.");
     }
 }
