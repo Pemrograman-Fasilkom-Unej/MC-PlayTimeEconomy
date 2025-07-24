@@ -51,7 +51,7 @@ public class TimeraldShopGUI implements Listener {
     }
 
     public void open(Player player) {
-        Inventory gui = Bukkit.createInventory(null, 27, "§bTimerald §aShop");
+        Inventory gui = Bukkit.createInventory(null, 36, "§bTimerald §aShop");
         TimeraldManager manager = plugin.getTimeraldManager();
         ConfigurationSection shop = plugin.getConfig().getConfigurationSection("shop");
         if (shop == null) return;
@@ -141,7 +141,7 @@ public class TimeraldShopGUI implements Listener {
         ItemMeta fillerMeta = filler.getItemMeta();
         fillerMeta.setDisplayName(" ");
         filler.setItemMeta(fillerMeta);
-        for (int slot = 0; slot < 27; slot++) {
+        for (int slot = 0; slot < 36; slot++) {
             if (gui.getItem(slot) == null) {
                 gui.setItem(slot, filler);
             }
@@ -207,14 +207,14 @@ public class TimeraldShopGUI implements Listener {
 
                 if (position != slot) continue;
                 if (manager.get(uuid) < cost) {
-                    player.sendMessage("§cNot enough Timerald.");
+                    player.sendMessage("§cNot enough §bTimerald§c.");
                     return;
                 }
 
                 manager.subtract(uuid, cost);
                 PlayTimeLimiterAPI api = PlayTimeLimiter.getInstance().getAPI();
                 api.reduceDailyUsed(uuid, minutes);
-                player.sendMessage("§aPurchased §f" + minutes + " minute(s) §afor §b" + cost + " Timerald.");
+                player.sendMessage("§aPurchased §f" + minutes + " minute(s) §afor §b" + cost + " Timerald§a.");
                 return;
             }
 
@@ -229,7 +229,7 @@ public class TimeraldShopGUI implements Listener {
                 }
 
                 if (manager.get(uuid) < cost) {
-                    player.sendMessage("§cNot enough Timerald.");
+                    player.sendMessage("§cNot enough §bTimerald§c.");
                     return;
                 }
 

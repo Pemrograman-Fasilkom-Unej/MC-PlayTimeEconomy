@@ -21,6 +21,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.inventory.InventoryView;
 
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +30,18 @@ import java.util.UUID;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Optional;
+
+import net.kyori.adventure.text.*;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.event.HoverEvent.ShowItem;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.key.Key;
+import org.bukkit.inventory.ItemStack;
 
 public class ShopCommand implements CommandExecutor, Listener {
 
@@ -112,7 +125,30 @@ public class ShopCommand implements CommandExecutor, Listener {
             shop.addListing(listing);
             shopManager.savePlayerShop(uuid);
 
-            player.sendMessage("§aListing created for " + price + " Timerald (@"+ quantity +"). You must stash the items separately.");
+            // Message parts
+            ItemMeta meta = hand.getItemMeta();
+            String rawName = meta != null && meta.hasDisplayName()
+                    ? meta.getDisplayName()
+                    : hand.getType().name().toLowerCase().replace("_", " ");
+
+            Component itemNameComponent = Component.text(rawName, NamedTextColor.WHITE);
+
+            Component clickableCommand = Component.text("/shop stash", NamedTextColor.GOLD)
+                    .clickEvent(ClickEvent.runCommand("/shop stash"))
+                    .hoverEvent(HoverEvent.showText(Component.text("Open stash", NamedTextColor.GRAY)));
+
+            Component finalMessage = Component.text("Listing ")
+                    .color(NamedTextColor.GREEN)
+                    .append(itemNameComponent)
+                    .append(Component.text(" created for " + price + " Timerald (@" + quantity + "). Stash the item via ", NamedTextColor.GREEN))
+                    .append(clickableCommand)
+                    .append(Component.text(".", NamedTextColor.GREEN));
+
+            // Send message to player
+            player.sendMessage(finalMessage);
+
+            // Optionally broadcast item to others
+            broadcastListing(player, hand, price, quantity);
             return true;
         }
 
@@ -158,14 +194,15 @@ public class ShopCommand implements CommandExecutor, Listener {
                 player.sendMessage("§cThat player has no active shop or no listings.");
                 return true;
             }
-
-            player.sendMessage("§6Shop of " + target.getName() + ":");
-            List<ShopItem> listings = targetShop.getListings();
-            for (int i = 0; i < listings.size(); i++) {
-                ShopItem item = listings.get(i);
-                player.sendMessage(" §e[" + i + "] §f" + item.getItem().getType() + " x" + item.getQuantity() +
-                        " §7- §a" + item.getPrice() + " Timerald");
-            }
+            
+            openPlayerShopGUI(player, target.getUniqueId(), targetShop, 0);
+            // player.sendMessage("§6Shop of " + target.getName() + ":");
+            // List<ShopItem> listings = targetShop.getListings();
+            // for (int i = 0; i < listings.size(); i++) {
+            //     ShopItem item = listings.get(i);
+            //     player.sendMessage(" §e[" + i + "] §f" + item.getItem().getType() + " x" + item.getQuantity() +
+            //             " §7- §a" + item.getPrice() + " Timerald");
+            // }
             return true;
         }
 
@@ -391,13 +428,21 @@ public class ShopCommand implements CommandExecutor, Listener {
 
             if (meta != null) {
                 int stock = getTotalMatchingItems(shop.getStash(), item.getItem());
+                String stockLine;
+                if (stock <= 0) {
+                    stockLine = "§7Stock available: §cOut of stock";
+                } else if (stock == 1) {
+                    stockLine = "§7Stock available: §e1 §7item";
+                } else {
+                    stockLine = "§7Stock available: §e" + stock + " §7items";
+                }
 
                 meta.setLore(List.of(
-                    "§7Price: §f" + item.getPrice() + " §2Timerald",
+                    "§7cost: §b" + item.getPrice() + " Timerald",
                     "§7Quantity per purchase: §ax" + item.getQuantity(),
-                    "§7Stock available: §e" + stock + " items",
+                    stockLine,
                     "",
-                    "§eClick to buy",
+                    "§8Click to purchase",
                     "§8Index: " + i
                 ));
                 display.setItemMeta(meta);
@@ -509,5 +554,39 @@ public class ShopCommand implements CommandExecutor, Listener {
         }
         return total;
     }
+
+    public void broadcastListing(Player sender, ItemStack item, double price, int quantity) {
+        String itemName = item.hasItemMeta() && item.getItemMeta().hasDisplayName()
+        ? item.getItemMeta().getDisplayName()
+        : formatMaterialName(item.getType());
+
+        // Build message with legacy color codes (no NamedTextColor used)
+        Component message = Component.text("§b⬥ §f" + sender.getName() + "§7 is selling §a" + itemName +
+                " §7for §b" + price + " Timerald §7(x" + quantity + ") ")
+            .append(Component.text("§e[Open Shop]")
+                .clickEvent(ClickEvent.runCommand("/shop visit " + sender.getName())));
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (!player.equals(sender)) {
+                player.sendMessage(message);
+            }
+        }
+    }
+
+    public String formatMaterialName(Material material) {
+        String[] words = material.name().toLowerCase().split("_");
+        StringBuilder formatted = new StringBuilder();
+
+        for (String word : words) {
+            if (word.length() > 0) {
+                formatted.append(Character.toUpperCase(word.charAt(0)))
+                        .append(word.substring(1))
+                        .append(" ");
+            }
+        }
+
+        return formatted.toString().trim();
+    }
+
 
 }
