@@ -359,6 +359,18 @@ public class ShopCommand implements CommandExecutor, Listener {
 
         if (!title.startsWith(SHOP_GUI_PREFIX)) return;
         event.setCancelled(true);
+        switch (event.getClick()) {
+            case SHIFT_LEFT:
+            case SHIFT_RIGHT:
+            case DOUBLE_CLICK:
+            case NUMBER_KEY:
+            case MIDDLE:
+            case DROP:
+            case CONTROL_DROP:
+                event.setResult(org.bukkit.event.Event.Result.DENY);
+                player.updateInventory();
+                return;
+        }
 
         int slot = event.getSlot();
         ItemStack clicked = event.getCurrentItem();

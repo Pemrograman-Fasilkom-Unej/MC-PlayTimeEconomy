@@ -27,7 +27,7 @@ public final class Timerald extends JavaPlugin {
         saveDefaultConfig();
 
         String currentVersion = getConfig().getString("config-version", "0");
-        String expectedVersion = "240725-test3";
+        String expectedVersion = "240725";
         if (currentVersion != expectedVersion) {
             getLogger().warning("Outdated config.yml detected! Regenerating with default values...");
 

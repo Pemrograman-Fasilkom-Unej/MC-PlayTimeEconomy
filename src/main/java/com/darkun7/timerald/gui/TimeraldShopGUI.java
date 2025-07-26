@@ -157,6 +157,18 @@ public class TimeraldShopGUI implements Listener {
         if (e.getClickedInventory() == null || !e.getClickedInventory().equals(e.getView().getTopInventory())) return;
 
         e.setCancelled(true);
+        switch (e.getClick()) {
+            case SHIFT_LEFT:
+            case SHIFT_RIGHT:
+            case DOUBLE_CLICK:
+            case NUMBER_KEY:
+            case MIDDLE:
+            case DROP:
+            case CONTROL_DROP:
+                e.setResult(org.bukkit.event.Event.Result.DENY);
+                player.updateInventory();
+                return;
+        }
 
         ItemStack clicked = e.getCurrentItem();
         if (clicked == null || !clicked.hasItemMeta() || !clicked.getItemMeta().hasDisplayName()) return;
