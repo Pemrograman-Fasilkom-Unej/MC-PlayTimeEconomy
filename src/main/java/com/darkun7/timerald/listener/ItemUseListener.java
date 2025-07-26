@@ -4,6 +4,8 @@ import com.darkun7.timerald.Timerald;
 import com.darkun7.timerald.item.OnUseItem;
 import com.darkun7.timerald.item.items.SmokeBomb;
 import com.darkun7.timerald.item.items.EscapeFeather;
+import com.darkun7.timerald.item.items.ExplosionPatch;
+import com.darkun7.timerald.item.items.BookKnowledge;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,6 +26,8 @@ public class ItemUseListener implements Listener {
         // Register custom items
         registeredItems.add(new SmokeBomb(plugin));
         registeredItems.add(new EscapeFeather(plugin));
+        registeredItems.add(new ExplosionPatch(plugin));
+        registeredItems.add(new BookKnowledge(plugin));
         // Add more items here later
     }
 

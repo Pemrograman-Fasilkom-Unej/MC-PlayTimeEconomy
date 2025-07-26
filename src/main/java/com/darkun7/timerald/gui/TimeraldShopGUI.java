@@ -39,7 +39,9 @@ public class TimeraldShopGUI implements Listener {
             "smoke-bomb",
             "nymph-snack",
             "escape-feather",
-            "lava-chicken"
+            "lava-chicken",
+            "explosion-patch",
+            "book-knowledge"
         );
     public static final String actionPurchase = "§8Click to purchase";
     private final Set<UUID> recentlyClicked = new HashSet<>();
@@ -51,7 +53,7 @@ public class TimeraldShopGUI implements Listener {
     }
 
     public void open(Player player) {
-        Inventory gui = Bukkit.createInventory(null, 36, "§bTimerald §aShop");
+        Inventory gui = Bukkit.createInventory(null, 45, "§bTimerald §aShop");
         TimeraldManager manager = plugin.getTimeraldManager();
         ConfigurationSection shop = plugin.getConfig().getConfigurationSection("shop");
         if (shop == null) return;
@@ -141,7 +143,7 @@ public class TimeraldShopGUI implements Listener {
         ItemMeta fillerMeta = filler.getItemMeta();
         fillerMeta.setDisplayName(" ");
         filler.setItemMeta(fillerMeta);
-        for (int slot = 0; slot < 36; slot++) {
+        for (int slot = 0; slot < 45; slot++) {
             if (gui.getItem(slot) == null) {
                 gui.setItem(slot, filler);
             }

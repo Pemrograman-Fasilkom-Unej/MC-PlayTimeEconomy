@@ -9,16 +9,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
 import com.darkun7.timerald.Timerald;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class LuminousLanternEffect implements TickItemEffect {
 
     private final Timerald plugin;
-    private final Map<Player, Location> previousLight = new HashMap<>();
+    private final Map<UUID, Location> previousLight = new HashMap<>();
 
     public LuminousLanternEffect(Timerald plugin) {
         this.plugin = plugin;
@@ -67,9 +66,10 @@ public class LuminousLanternEffect implements TickItemEffect {
         }
 
         // Dynamic light block handling
-        Location currentLoc = player.getLocation().getBlock().getLocation(); // Block-level precision
+        UUID uuid = player.getUniqueId();
+        Location currentLoc = player.getLocation().getBlock().getLocation();
 
-        Location previousLoc = previousLight.get(player);
+        Location previousLoc = previousLight.get(uuid);
         if (previousLoc != null && !previousLoc.equals(currentLoc)) {
             Block previousBlock = previousLoc.getBlock();
             if (previousBlock.getType() == Material.LIGHT) {
@@ -81,7 +81,7 @@ public class LuminousLanternEffect implements TickItemEffect {
         if (currentBlock.getType() == Material.AIR || currentBlock.getType() == Material.LIGHT) {
             currentBlock.setType(Material.LIGHT);
             currentBlock.setBlockData(plugin.getServer().createBlockData("minecraft:light[level=15]"), false);
-            previousLight.put(player, currentLoc);
+            previousLight.put(uuid, currentLoc);
         }
     }
 
@@ -103,7 +103,8 @@ public class LuminousLanternEffect implements TickItemEffect {
         }
 
         // Remove any lingering light block
-        Location last = previousLight.remove(player);
+        UUID uuid = player.getUniqueId();
+        Location last = previousLight.remove(uuid);
         if (last != null) {
             Block block = last.getBlock();
             if (block.getType() == Material.LIGHT) {

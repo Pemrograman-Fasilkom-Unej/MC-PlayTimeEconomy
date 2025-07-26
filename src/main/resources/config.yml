@@ -1,4 +1,4 @@
-config-version: "240725"
+config-version: "240726-pre"
 shop:
   playtime:
     "1":
@@ -39,7 +39,7 @@ shop:
         - "§fReduce daily playtime §640 §fminutes"
 
   luminous-lantern:
-    type: consumable
+    type: wearable
     cost: 128
     material: SOUL_LANTERN
     name: "§f<§bLuminous §9Lantern§f>"
@@ -120,13 +120,38 @@ shop:
     effects:
       - WATER_BREATHING:90:1
       - NIGHT_VISION:90:1
+  
+  book-knowledge:
+    type: on-use
+    material: WRITABLE_BOOK
+    material2: WRITTEN_BOOK
+    name: "§f<§2Book §fof §aKnowledge§f>"
+    position: 25
+    enchanted: false
+    xp: 2170
+    cost: 8
+    lore:
+      - "§7Right click to store XP"
+      - "§7Materialize your XP as boook."
+      - "§eConsume §a2.170 §exp" 
+
+  explosion-patch:
+    type: on-use
+    cost: 4
+    material: ARMS_UP_POTTERY_SHERD
+    name: "§f<§7Explosion §8Patch§f>"
+    position: 28
+    enchanted: true
+    lore:
+      - "§fFace front§7 then right click to use"
+      - "§7Fill up hole caused by explosion"
 
   smoke-bomb:
     type: on-use
     cost: 4
     material: FIREWORK_STAR
     name: "§f<§7Smoke §8Bomb§f>"
-    position: 25
+    position: 29
     enchanted: true
     lore:
       - "§7Right click to use"
@@ -137,3 +162,4 @@ shop:
     particles:
       type: LARGE_SMOKE
       amount: 20
+
