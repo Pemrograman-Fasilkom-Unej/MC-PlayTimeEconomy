@@ -242,29 +242,30 @@ public class ShopCommand implements CommandExecutor, Listener {
             ItemStack toGive = item.getItem().clone();
             toGive.setAmount(item.getQuantity());
 
-            HashMap<Integer, ItemStack> remaining = player.getInventory().addItem(toGive.clone());
-            if (!remaining.isEmpty()) {
-                player.sendMessage("§cNot enough inventory space to complete the purchase.");
-                return true;
-            }
-
             // Try to remove from stash before taking money
             boolean success = sellerShop.removeItemFromStash(item.getItem(), item.getQuantity());
             if (!success) {
                 player.sendMessage("§cThe seller no longer has enough of this item in their stash.");
                 return true;
+            } else {
+                // Transfer Timerald
+                plugin.getTimeraldManager().subtract(buyerId, item.getPrice());
+                plugin.getTimeraldManager().add(sellerId, item.getPrice());
+
+                // Give item to buyer
+                HashMap<Integer, ItemStack> remaining = player.getInventory().addItem(toGive.clone());
+                if (!remaining.isEmpty()) {
+                    player.sendMessage("§cNot enough inventory space to complete the purchase.");
+                    return true;
+                }
+                player.getInventory().addItem(toGive);
+
+                player.sendMessage("§aPurchased " + toGive.getType() + " x" + item.getQuantity() + " from " + seller.getName() + ".");
+
+                return true;
             }
 
-            // Transfer Timerald
-            plugin.getTimeraldManager().subtract(buyerId, item.getPrice());
-            plugin.getTimeraldManager().add(sellerId, item.getPrice());
-
-            // Give item to buyer
-            player.getInventory().addItem(toGive);
-
-            player.sendMessage("§aPurchased " + toGive.getType() + " x" + item.getQuantity() + " from " + seller.getName() + ".");
-
-            return true;
+            
         }
 
 
@@ -300,6 +301,7 @@ public class ShopCommand implements CommandExecutor, Listener {
         player.sendMessage("§aYour stash has been saved.");
     }
 
+    // UI: SHOP
     private void openPlayerShopSelectorGUI(Player player, int page) {
         List<PlayerShop> openShops = shopManager.getOpenShops().stream()
             .filter(shop -> !shop.getListings().isEmpty())
@@ -345,15 +347,34 @@ public class ShopCommand implements CommandExecutor, Listener {
         next.setItemMeta(nextMeta);
         gui.setItem(53, next);
 
+        // TODO:EMERALD and CHEST
+        // Balance display in slot 48
+        int balance = plugin.getTimeraldManager().get(player.getUniqueId());
+        ItemStack emerald = new ItemStack(Material.EMERALD);
+        ItemMeta emeraldMeta = emerald.getItemMeta();
+        emeraldMeta.setDisplayName("§aYour Balance: §b" + balance + " Timerald");
+        emeraldMeta.setLore(List.of("§7Earn Timeralds by depositing emeralds"));
+        emerald.setItemMeta(emeraldMeta);
+        gui.setItem(48, emerald);
+
+        // Stash
+        ItemStack stash = new ItemStack(Material.CHEST);
+        ItemMeta stashMeta = stash.getItemMeta();
+        stashMeta.setDisplayName("§aStash");
+        stashMeta.setLore(List.of("§eClick to open your stash"));
+        stash.setItemMeta(stashMeta);
+        gui.setItem(50, stash);
+
         player.openInventory(gui);
     }
 
 
 
-    // click Shop
+    // ACTION: SHOP
     @EventHandler
     public void onClickShopPage(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
+        UUID uuid = player.getUniqueId();
         InventoryView view = event.getView();
         String title = view.getTitle();
 
@@ -398,6 +419,16 @@ public class ShopCommand implements CommandExecutor, Listener {
             return;
         }
 
+        // Clicked "Emerald"
+        if (slot == 48) return;
+
+        // Clicked "Stash"
+        if (slot == 50) {
+            PlayerShop shop = shopManager.getOrCreateShop(uuid);
+            openStashGUI(player, shop);
+            return;
+        }
+
         if (slot == 53 && currentPage < maxPage - 1) {
             openPlayerShopSelectorGUI(player, currentPage + 1);
             return;
@@ -418,7 +449,7 @@ public class ShopCommand implements CommandExecutor, Listener {
         }
     }
 
-
+    // UI: PLAYER SHOP
     public void openPlayerShopGUI(Player viewer, UUID ownerId, PlayerShop shop, int page) {
         String ownerName = Bukkit.getOfflinePlayer(ownerId).getName();
         List<ShopItem> listings = shop.getListings();
@@ -449,12 +480,19 @@ public class ShopCommand implements CommandExecutor, Listener {
                     stockLine = "§7Stock available: §e" + stock + " §7items";
                 }
 
+                String purchaseLine;
+                if (ownerName != viewer.getName()) {
+                    purchaseLine = "§8Click to purchase";
+                } else {
+                    purchaseLine = "§cClick to unlist";
+                }
+
                 meta.setLore(List.of(
                     "§7cost: §b" + item.getPrice() + " Timerald",
                     "§7Quantity per purchase: §ax" + item.getQuantity(),
                     stockLine,
                     "",
-                    "§8Click to purchase",
+                    purchaseLine,
                     "§8Index: " + i
                 ));
                 display.setItemMeta(meta);
@@ -481,7 +519,7 @@ public class ShopCommand implements CommandExecutor, Listener {
         ItemStack emerald = new ItemStack(Material.EMERALD);
         ItemMeta emeraldMeta = emerald.getItemMeta();
         emeraldMeta.setDisplayName("§aYour Balance: §b" + balance + " Timerald");
-        emeraldMeta.setLore(List.of("§7Earn Timeralds by depositing emeralds"));
+        emeraldMeta.setLore(List.of("§7Earn Timeralds by depositing emeralds","§cClick to return to Shop list"));
         emerald.setItemMeta(emeraldMeta);
         gui.setItem(49, emerald);
 
@@ -489,10 +527,11 @@ public class ShopCommand implements CommandExecutor, Listener {
     }
 
 
-    // Purchase
+    // ACTION: PLAYER SHOP (Purchase)
     @EventHandler
     public void onPlayerShopClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
+        UUID uuid = player.getUniqueId();
 
         String title = event.getView().getTitle();
         if (!title.startsWith(PLAYER_SHOP_GUI_PREFIX)) return;
@@ -514,6 +553,10 @@ public class ShopCommand implements CommandExecutor, Listener {
             return;
         }
 
+        OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerName);
+        PlayerShop shop = shopManager.getShop(owner.getUniqueId());
+        String sellerName = owner.getName();
+
         // Pagination logic
         int slot = event.getSlot();
         int perPage = 45;
@@ -521,8 +564,6 @@ public class ShopCommand implements CommandExecutor, Listener {
 
         // Clicked "Previous"
         if (slot == 45 && page > 0) {
-            OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerName);
-            PlayerShop shop = shopManager.getShop(owner.getUniqueId());
             if (shop != null) {
                 openPlayerShopGUI(player, owner.getUniqueId(), shop, page - 1);
             }
@@ -531,8 +572,6 @@ public class ShopCommand implements CommandExecutor, Listener {
 
         // Clicked "Next"
         if (slot == 53) {
-            OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerName);
-            PlayerShop shop = shopManager.getShop(owner.getUniqueId());
             if (shop != null) {
                 int maxPage = (int) Math.ceil((double) shop.getListings().size() / perPage);
                 if (page + 1 < maxPage) {
@@ -542,16 +581,24 @@ public class ShopCommand implements CommandExecutor, Listener {
             return;
         }
 
-        if (slot == 49) return;
-
-        UUID uuid = player.getUniqueId();
+        // Clicked "Emerald"
+        if (slot == 49) {
+            openPlayerShopSelectorGUI(player, 0);
+            return;
+        }
 
         if (recentlyClicked.contains(uuid)) {
             // player.sendMessage("§ePlease wait before making another purchase.");
             return;
         }
         // Otherwise, clicked a shop item — simulate /shop buy
-        player.performCommand("shop buy " + ownerName + " " + index);
+        if (sellerName.equals(player.getName())) {
+            player.sendMessage("sama");
+            player.performCommand("shop cancel " + index);
+        } else {
+            player.sendMessage("beda");
+            player.performCommand("shop buy " + ownerName + " " + index);
+        }
         recentlyClicked.remove(uuid);
         player.closeInventory();
     }
