@@ -248,17 +248,15 @@ public class ShopCommand implements CommandExecutor, Listener {
                 player.sendMessage("§cThe seller no longer has enough of this item in their stash.");
                 return true;
             } else {
-                // Transfer Timerald
-                plugin.getTimeraldManager().subtract(buyerId, item.getPrice());
-                plugin.getTimeraldManager().add(sellerId, item.getPrice());
-
                 // Give item to buyer
                 HashMap<Integer, ItemStack> remaining = player.getInventory().addItem(toGive.clone());
                 if (!remaining.isEmpty()) {
                     player.sendMessage("§cNot enough inventory space to complete the purchase.");
                     return true;
                 }
-                player.getInventory().addItem(toGive);
+                // Transfer Timerald
+                plugin.getTimeraldManager().subtract(buyerId, item.getPrice());
+                plugin.getTimeraldManager().add(sellerId, item.getPrice());
 
                 player.sendMessage("§aPurchased " + toGive.getType() + " x" + item.getQuantity() + " from " + seller.getName() + ".");
 
