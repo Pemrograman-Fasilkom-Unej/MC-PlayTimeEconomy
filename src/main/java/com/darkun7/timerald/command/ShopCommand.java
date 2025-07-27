@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Optional;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import net.kyori.adventure.text.*;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -254,12 +256,19 @@ public class ShopCommand implements CommandExecutor, Listener {
                     player.sendMessage("§cNot enough inventory space to complete the purchase.");
                     return true;
                 }
+                String itemName = Arrays.stream(toGive.getType().name().toLowerCase().split("_"))
+                                    .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1))
+                                    .collect(Collectors.joining(" "));
                 // Transfer Timerald
                 plugin.getTimeraldManager().subtract(buyerId, item.getPrice());
                 plugin.getTimeraldManager().add(sellerId, item.getPrice());
 
-                player.sendMessage("§aPurchased " + toGive.getType() + " x" + item.getQuantity() + " from " + seller.getName() + ".");
+                player.sendMessage("§aPurchased " + itemName + " ×" + item.getQuantity() + " from " + seller.getName() + ".");
 
+                Player onlineSeller = Bukkit.getPlayer(sellerId);
+                if (onlineSeller != null && onlineSeller.isOnline()) {
+                    onlineSeller.sendMessage("§a" + player.getName() + " bought " + itemName + " ×" + item.getQuantity() + " from your shop for " + item.getPrice() + " Timerald.");
+                }
                 return true;
             }
 

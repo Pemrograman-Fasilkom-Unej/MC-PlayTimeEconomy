@@ -67,7 +67,7 @@ public class LuminousLanternEffect implements TickItemEffect {
 
         // Dynamic light block handling
         UUID uuid = player.getUniqueId();
-        Location currentLoc = player.getLocation().getBlock().getLocation();
+        Location currentLoc = player.getLocation().getBlock().getLocation().add(0, 1, 0);
 
         Location previousLoc = previousLight.get(uuid);
         if (previousLoc != null && !previousLoc.equals(currentLoc)) {
