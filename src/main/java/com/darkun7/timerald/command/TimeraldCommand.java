@@ -5,6 +5,7 @@ import com.darkun7.limiter.api.PlayTimeLimiterAPI;
 import com.darkun7.timerald.Timerald;
 import com.darkun7.timerald.data.TimeraldManager;
 import com.darkun7.timerald.gui.TimeraldShopGUI;
+import com.darkun7.timerald.listener.ClickChainListener;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -26,9 +27,11 @@ import java.util.ArrayList;
 public class TimeraldCommand implements CommandExecutor {
 
     private final Timerald plugin;
+    private final ClickChainListener quickaction;
 
-    public TimeraldCommand(Timerald plugin) {
+    public TimeraldCommand(Timerald plugin, ClickChainListener quickaction) {
         this.plugin = plugin;
+        this.quickaction = quickaction;
     }
 
     @Override
@@ -58,6 +61,13 @@ public class TimeraldCommand implements CommandExecutor {
                 player.sendMessage("§e" + rank++ + ". §f" + name + " §7- §b" + balance + " Timerald");
             }
 
+            return true;
+        }
+
+        // /timerald quickaction
+        if (args.length == 1 && args[0].equalsIgnoreCase("quickaction")) {
+            boolean nowEnabled = quickaction.toggleCombo(uuid);
+            player.sendMessage("§7Click combo is now " + (nowEnabled ? "§aenabled" : "§cdisabled"));
             return true;
         }
 

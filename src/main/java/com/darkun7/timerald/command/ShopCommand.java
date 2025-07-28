@@ -600,10 +600,8 @@ public class ShopCommand implements CommandExecutor, Listener {
         }
         // Otherwise, clicked a shop item — simulate /shop buy
         if (sellerName.equals(player.getName())) {
-            player.sendMessage("sama");
             player.performCommand("shop cancel " + index);
         } else {
-            player.sendMessage("beda");
             player.performCommand("shop buy " + ownerName + " " + index);
         }
         recentlyClicked.remove(uuid);

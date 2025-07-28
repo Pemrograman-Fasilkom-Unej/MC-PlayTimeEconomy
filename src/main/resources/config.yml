@@ -1,4 +1,4 @@
-config-version: "240726-pre"
+config-version: "240728-pre"
 shop:
   playtime:
     "1":
@@ -128,12 +128,13 @@ shop:
     name: "§f<§2Book §fof §aKnowledge§f>"
     position: 25
     enchanted: false
-    xp: 2170
+    xp: 910
     cost: 8
     lore:
       - "§7Right click to store XP"
       - "§7Materialize your XP as boook."
-      - "§eConsume §a2.170 §exp" 
+      - "§eConsume §a910 §exp or Level ~25" 
+# https://thistothatcalculator.com/minecraft-level-to-xp-calculator/
 
   explosion-patch:
     type: on-use

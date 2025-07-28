@@ -27,7 +27,7 @@ public final class Timerald extends JavaPlugin {
         saveDefaultConfig();
 
         String currentVersion = getConfig().getString("config-version", "0");
-        String expectedVersion = "240726-pre";
+        String expectedVersion = "240728-pre";
         if (currentVersion != expectedVersion) {
             getLogger().warning("Outdated config.yml detected! Regenerating with default values...");
 
@@ -43,17 +43,18 @@ public final class Timerald extends JavaPlugin {
         this.timeraldManager = new TimeraldManager(this);
         this.shopManager = new ShopManager(this, this.timeraldManager);
         this.shopManager.loadShops();
+        ClickChainListener clickChainListener = new ClickChainListener(this);
 
         getServer().getPluginManager().registerEvents(new TimeraldListener(this), this);
         getServer().getPluginManager().registerEvents(new CustomItemListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
         getServer().getPluginManager().registerEvents(new TickItemListener(this), this);
         getServer().getPluginManager().registerEvents(new PreventPlacementListener(this), this);
-        getServer().getPluginManager().registerEvents(new ClickChainListener(this), this);
+        getServer().getPluginManager().registerEvents(clickChainListener, this);
 
         getCommand("deposit").setExecutor(new DepositCommand(this));
         getCommand("withdraw").setExecutor(new WithdrawCommand(this));
-        getCommand("timerald").setExecutor(new TimeraldCommand(this));
+        getCommand("timerald").setExecutor(new TimeraldCommand(this, clickChainListener));
         getCommand("timerald").setTabCompleter(new TimeraldTabCompleter());
         getCommand("shop").setExecutor(new ShopCommand(this, this.shopManager));
         getCommand("shop").setTabCompleter(new ShopTabCompleter(this.shopManager));

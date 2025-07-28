@@ -67,21 +67,39 @@ public class LuminousLanternEffect implements TickItemEffect {
 
         // Dynamic light block handling
         UUID uuid = player.getUniqueId();
-        Location currentLoc = player.getLocation().getBlock().getLocation().add(0, 1, 0);
+        Location baseLoc = player.getLocation().getBlock().getLocation();
 
         Location previousLoc = previousLight.get(uuid);
-        if (previousLoc != null && !previousLoc.equals(currentLoc)) {
+        if (previousLoc != null && !previousLoc.equals(baseLoc)) {
             Block previousBlock = previousLoc.getBlock();
             if (previousBlock.getType() == Material.LIGHT) {
                 previousBlock.setType(Material.AIR);
             }
         }
 
-        Block currentBlock = currentLoc.getBlock();
-        if (currentBlock.getType() == Material.AIR || currentBlock.getType() == Material.LIGHT) {
+        // Try to find a valid location around the player to place the light
+        Location targetLoc = null;
+        int range = 2; // You can increase this if needed
+        for (int yOffset = 0; yOffset <= range; yOffset++) {
+            Location up = baseLoc.clone().add(0, yOffset, 0);
+            Location down = baseLoc.clone().add(0, -yOffset, 0);
+
+            if (up.getBlock().getType() == Material.AIR || up.getBlock().getType() == Material.LIGHT) {
+                targetLoc = up;
+                break;
+            }
+
+            if (down.getBlock().getType() == Material.AIR || down.getBlock().getType() == Material.LIGHT) {
+                targetLoc = down;
+                break;
+            }
+        }
+
+        if (targetLoc != null) {
+            Block currentBlock = targetLoc.getBlock();
             currentBlock.setType(Material.LIGHT);
             currentBlock.setBlockData(plugin.getServer().createBlockData("minecraft:light[level=15]"), false);
-            previousLight.put(uuid, currentLoc);
+            previousLight.put(uuid, targetLoc);
         }
     }
 

@@ -1,30 +1,43 @@
 package com.darkun7.timerald.listener;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class ClickChainListener implements Listener {
 
     private final JavaPlugin plugin;
-
-    // How long (ms) before a combo resets
     private final long timeout = 1200;
 
-    // Stores per-player click history
     private final Map<UUID, List<ClickEntry>> clickHistory = new HashMap<>();
-
-    // Command mappings
     private final Map<List<ClickType>, String> comboCommands = new HashMap<>();
+
+    private final File playerSettingsFile;
+    private final FileConfiguration playerSettings;
 
     public ClickChainListener(JavaPlugin plugin) {
         this.plugin = plugin;
+
+        // Setup YAML config for player settings
+        playerSettingsFile = new File(plugin.getDataFolder(), "player_settings.yml");
+        if (!playerSettingsFile.exists()) {
+            try {
+                playerSettingsFile.getParentFile().mkdirs();
+                playerSettingsFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        playerSettings = YamlConfiguration.loadConfiguration(playerSettingsFile);
 
         // Register combos
         registerCombo(List.of(ClickType.RIGHT, ClickType.RIGHT, ClickType.RIGHT), "timerald");
@@ -52,9 +65,11 @@ public class ClickChainListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        if (!player.getInventory().getItemInMainHand().getType().isAir()){
-            return;
-        }
+        // Check if combo is enabled for this player
+        if (!isComboEnabled(uuid)) return;
+
+        // Only allow clicks with empty hand
+        if (!player.getInventory().getItemInMainHand().getType().isAir()) return;
 
         ClickType click = null;
         if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
@@ -62,36 +77,26 @@ public class ClickChainListener implements Listener {
         } else if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
             click = ClickType.LEFT;
         } else {
-            return; // not a click we care about
+            return;
         }
 
-        // Get and update click history
         List<ClickEntry> history = clickHistory.getOrDefault(uuid, new ArrayList<>());
         long now = System.currentTimeMillis();
-
-        // Remove old entries
         history.removeIf(entry -> now - entry.time > timeout);
-
-        // Add new entry
         history.add(new ClickEntry(click, now));
         clickHistory.put(uuid, history);
 
-        // Check for matches
         List<ClickType> currentPattern = new ArrayList<>();
         for (ClickEntry entry : history) currentPattern.add(entry.type);
 
         for (Map.Entry<List<ClickType>, String> combo : comboCommands.entrySet()) {
             if (endsWith(currentPattern, combo.getKey())) {
-                // player.sendMessage("§aCombo matched! Running /" + combo.getValue());
                 player.performCommand(combo.getValue());
-
-                // Reset history after match
-                clickHistory.put(uuid, new ArrayList<>());
+                clickHistory.put(uuid, new ArrayList<>()); // reset history
                 break;
             }
         }
     }
-
 
     private boolean endsWith(List<ClickType> full, List<ClickType> pattern) {
         if (full.size() < pattern.size()) return false;
@@ -100,5 +105,26 @@ public class ClickChainListener implements Listener {
             if (full.get(i + offset) != pattern.get(i)) return false;
         }
         return true;
+    }
+
+    // === Player Setting ===
+
+    public boolean toggleCombo(UUID uuid) {
+        boolean nowEnabled = !isComboEnabled(uuid);
+        setComboEnabled(uuid, nowEnabled);
+        return nowEnabled;
+    }
+
+    public boolean isComboEnabled(UUID uuid) {
+        return playerSettings.getBoolean(uuid.toString() + ".combo-enabled", true); // default true
+    }
+
+    public void setComboEnabled(UUID uuid, boolean enabled) {
+        playerSettings.set(uuid.toString() + ".combo-enabled", enabled);
+        try {
+            playerSettings.save(playerSettingsFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -22,6 +22,7 @@ public class TimeraldTabCompleter implements TabCompleter {
         if (args.length == 1) {
             completions.add("send");
             completions.add("top");
+            completions.add("quickaction");
             return completions;
         }
 
@@ -34,8 +35,9 @@ public class TimeraldTabCompleter implements TabCompleter {
 
         if (args.length == 3 && args[0].equalsIgnoreCase("send")) {
             completions.add("1");
-            completions.add("5");
-            completions.add("10");
+            completions.add("8");
+            completions.add("16");
+            completions.add("32");
             completions.add("64");
             return completions;
         }

@@ -7,20 +7,24 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class BookKnowledge implements OnUseItem {
 
     private final String displayName;
     private final Material material;
     private final Material material2;
+    private final Boolean enchanted;
     private final List<String> lore;
     private final List<PotionEffect> effects;
     private final Particle particle;
@@ -30,6 +34,7 @@ public class BookKnowledge implements OnUseItem {
     private final int xpToStore;
 
     private final NamespacedKey knowledgeKey;
+    
 
     public BookKnowledge(Timerald plugin) {
         this.plugin = plugin;
@@ -44,7 +49,8 @@ public class BookKnowledge implements OnUseItem {
         this.material = Material.getMaterial(section.getString("material", "BOOK_AND_QUILL").toUpperCase());
         this.material2 = Material.getMaterial(section.getString("material2", "WRITTEN_BOOK").toUpperCase());
         this.lore = section.getStringList("lore");
-        this.xpToStore = section.getInt("xp", 2170);
+        this.xpToStore = section.getInt("xp", 910);
+        this.enchanted = section.getBoolean("enchanted", false);
 
         // Load effects
         this.effects = new ArrayList<>();
@@ -125,16 +131,42 @@ public class BookKnowledge implements OnUseItem {
                 successAction(player);
                 return;
             } else {
-                player.sendMessage("§cYou don't have enough XP (need " + xpToStore + ").");
+                int currentPlayerXP = getTotalXP(player);
+                player.sendMessage("§cYou don't have enough XP (need " + (xpToStore - currentPlayerXP) + ").");
                 return;
             }
 
         } else if (item.getType() == material2) {
+            if (!player.isSneaking()) {
+                player.sendMessage("§7You must sneak to read the book.");
+                return;
+            }
             player.sendMessage("§aOpening book...");
             BookMeta meta = (BookMeta) item.getItemMeta();
             if (meta != null && meta.getPersistentDataContainer().has(knowledgeKey, PersistentDataType.INTEGER)) {
                 int storedXp = meta.getPersistentDataContainer().get(knowledgeKey, PersistentDataType.INTEGER);
                 setTotalXP(player, getTotalXP(player) + storedXp);
+                
+                Random random = new Random();
+                int chance = random.nextInt(100);
+                boolean loseItem = chance < 25;
+
+                if (loseItem) {
+                    item.setAmount(item.getAmount() - 1);
+                    player.sendMessage("§eThe book crumbled into dust after releasing its energy!");
+                } else {
+                    ItemStack bookItem = new ItemStack(material);
+                    ItemMeta itemMeta = bookItem.getItemMeta();
+                    itemMeta.setDisplayName(displayName);
+                    itemMeta.setLore(lore);
+                    if (enchanted) {
+                        itemMeta.addEnchant(Enchantment.INFINITY, 1, true);
+                        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                    }
+                    bookItem.setItemMeta(itemMeta);
+                    player.getInventory().addItem(bookItem);
+                    player.sendMessage("§aThe book remained intact, but lose it's knowledge");
+                }
                 item.setAmount(item.getAmount() - 1);
                 player.sendMessage("§aYou regained " + storedXp + " XP from the sealed book.");
             }
@@ -193,5 +225,11 @@ public class BookKnowledge implements OnUseItem {
         if (level >= 0 && level <= 15) return 2 * level + 7;
         else if (level <= 30) return 5 * level - 38;
         else return 9 * level - 158;
+    }
+
+    public static int getXpToNext(int level) {
+        if (level <= 15) return 2 * level + 7;
+        if (level <= 30) return 5 * level - 38;
+        return 9 * level - 158;
     }
 }
