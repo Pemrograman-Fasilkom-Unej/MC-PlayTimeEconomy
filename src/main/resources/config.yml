@@ -1,4 +1,4 @@
-config-version: "240728-pre"
+config-version: "240729-pre01"
 shop:
   playtime:
     "1":
@@ -177,63 +177,12 @@ shop:
       amount: 20
 
 
-brew:
-  recipe1:
-    pattern:
-      - AIR
-      - shop.escape-feather
-      - AIR
-      - AIR
-      - THICK
-      - AIR
-      - AIR
-      - AIR
-      - AIR
-    result:
-      variation: shop.wormhole-potion
-
-  recipe2:
-    pattern:
-      - AIR
-      - BLAZE_ROD
-      - AIR
-      - AIR
-      - THICK
-      - AIR
-      - AIR
-      - AIR
-      - AIR
-    result:
-      variation: original
-
 crafting:
   potion-of-flight:
     shape:
-      - escape-feather THICK_POTION AIR
+      - escape-feather POTION:THICK AIR
       - AIR AIR AIR
       - AIR AIR AIR
     result:
       variation: wormhole-potion
-
-# brew:
-#   - ingredient:
-#       type: FEATHER
-#       variation: shop.escape-feather
-#     base_potion: THICK
-#     result:
-#       name: "§dPotion of Flight"
-#       variation: shop.wormhole-potion
-#       color: AQUA
-#       base_potion: THICK
-
-#   - ingredient:
-#       type: BLAZE_ROD
-#       variation: original
-#     base_potion: THICK
-#     result:
-#       name: "§6Potion of Fire"
-#       variation: original
-#       color: RED
-#       base_potion: LONG_FIRE_RESISTANCE
-
 

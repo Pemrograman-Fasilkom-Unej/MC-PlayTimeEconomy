@@ -13,6 +13,9 @@ import com.darkun7.timerald.command.ShopTabCompleter;
 
 import com.darkun7.timerald.shop.ShopManager;
 
+import com.darkun7.timerald.data.CustomItemManager;
+import com.darkun7.timerald.gui.CraftingGUI;
+
 import java.io.File; 
 
 public final class Timerald extends JavaPlugin {
@@ -27,7 +30,7 @@ public final class Timerald extends JavaPlugin {
         saveDefaultConfig();
 
         String currentVersion = getConfig().getString("config-version", "0");
-        String expectedVersion = "240728-pre";
+        String expectedVersion = "240729-pre01";
         if (currentVersion != expectedVersion) {
             getLogger().warning("Outdated config.yml detected! Regenerating with default values...");
 
@@ -45,12 +48,18 @@ public final class Timerald extends JavaPlugin {
         this.shopManager.loadShops();
         ClickChainListener clickChainListener = new ClickChainListener(this);
 
+        // START: UNDER DEVELOPMENT
+        CustomItemManager.load(getConfig());
+        // END: UNDER DEVELOPMENT
+
+
         getServer().getPluginManager().registerEvents(new TimeraldListener(this), this);
         getServer().getPluginManager().registerEvents(new CustomItemListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
         getServer().getPluginManager().registerEvents(new TickItemListener(this), this);
         getServer().getPluginManager().registerEvents(new PreventPlacementListener(this), this);
         getServer().getPluginManager().registerEvents(clickChainListener, this);
+        getServer().getPluginManager().registerEvents(new CraftingInteractListener(this), this);
 
         getCommand("deposit").setExecutor(new DepositCommand(this));
         getCommand("withdraw").setExecutor(new WithdrawCommand(this));

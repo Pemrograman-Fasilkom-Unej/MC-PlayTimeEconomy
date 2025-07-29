@@ -21,6 +21,7 @@ public class CustomItemListener implements Listener {
         consumables.add(new TimeElixir(plugin));
         consumables.add(new NymphSnack(plugin));
         consumables.add(new LavaChicken(plugin));
+        consumables.add(new WormholePotion(plugin));
         // later: consumables.add(new AnotherItem(...));
     }
 

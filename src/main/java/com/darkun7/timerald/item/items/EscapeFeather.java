@@ -60,8 +60,15 @@ public class EscapeFeather implements OnUseItem {
 
         // 🏠 Destination
         Location bed = player.getBedSpawnLocation();
-        if (bed == null) bed = player.getWorld().getSpawnLocation();
-
+        if (bed == null) {
+            World overworld = Bukkit.getWorld("world"); // "world" is the default Overworld name
+            if (overworld != null) {
+                bed = overworld.getSpawnLocation();
+            } else {
+                bed = player.getWorld().getSpawnLocation(); // fallback
+            }
+        }
+        
         final Location teleportLocation = bed;
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {

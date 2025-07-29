@@ -21,7 +21,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.inventory.InventoryView;
 
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
