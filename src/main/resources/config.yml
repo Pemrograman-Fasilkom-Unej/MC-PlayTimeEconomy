@@ -93,6 +93,18 @@ shop:
       - "§7Teleport back to your bed or world spawn."
       - "§eOnly usable in the §4Nether §eand §dEnd." 
 
+  wormhole-potion:
+    type: consumable
+    material: POTION
+    name: "§f<§bWormhole §9potion§f>"
+    position: 22
+    enchanted: true
+    cost: 32
+    lore:
+      - "§7Drink it to use"
+      - "§7Teleport back to your bed or world spawn."
+      - "§eRing bell to return to teleported location." 
+
   lava-chicken:
     type: consumable
     cost: 24
@@ -134,7 +146,7 @@ shop:
       - "§7Right click to store XP"
       - "§7Materialize your XP as boook."
       - "§eConsume §a910 §exp or Level ~25" 
-# https://thistothatcalculator.com/minecraft-level-to-xp-calculator/
+    # https://thistothatcalculator.com/minecraft-level-to-xp-calculator/
 
   explosion-patch:
     type: on-use
@@ -163,4 +175,65 @@ shop:
     particles:
       type: LARGE_SMOKE
       amount: 20
+
+
+brew:
+  recipe1:
+    pattern:
+      - AIR
+      - shop.escape-feather
+      - AIR
+      - AIR
+      - THICK
+      - AIR
+      - AIR
+      - AIR
+      - AIR
+    result:
+      variation: shop.wormhole-potion
+
+  recipe2:
+    pattern:
+      - AIR
+      - BLAZE_ROD
+      - AIR
+      - AIR
+      - THICK
+      - AIR
+      - AIR
+      - AIR
+      - AIR
+    result:
+      variation: original
+
+crafting:
+  potion-of-flight:
+    shape:
+      - escape-feather THICK_POTION AIR
+      - AIR AIR AIR
+      - AIR AIR AIR
+    result:
+      variation: wormhole-potion
+
+# brew:
+#   - ingredient:
+#       type: FEATHER
+#       variation: shop.escape-feather
+#     base_potion: THICK
+#     result:
+#       name: "§dPotion of Flight"
+#       variation: shop.wormhole-potion
+#       color: AQUA
+#       base_potion: THICK
+
+#   - ingredient:
+#       type: BLAZE_ROD
+#       variation: original
+#     base_potion: THICK
+#     result:
+#       name: "§6Potion of Fire"
+#       variation: original
+#       color: RED
+#       base_potion: LONG_FIRE_RESISTANCE
+
 

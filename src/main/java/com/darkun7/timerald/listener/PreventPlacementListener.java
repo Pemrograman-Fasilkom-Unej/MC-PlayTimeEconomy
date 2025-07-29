@@ -32,7 +32,18 @@ public class PreventPlacementListener implements Listener {
         Player player = event.getPlayer();
         ItemStack main = player.getInventory().getItemInMainHand();
         ItemStack off = player.getInventory().getItemInOffHand();
+
         String placedBlockType = event.getBlockPlaced().getType().toString();
+        Block placedBlock = event.getBlock();
+        Block below = placedBlock.getRelative(BlockFace.DOWN);
+        Block above = placedBlock.getRelative(BlockFace.UP);
+
+         // Determine whether it is hanging or standing
+        Block clicked = event.getBlockAgainst();
+        BlockFace face = getBlockFace(placedBlock, clicked);
+
+        boolean isHanging = face == BlockFace.DOWN; // placing under a block
+        boolean isStanding = face == BlockFace.UP;  // placing on top of a block
 
         String displayName = null;
         if (main != null && main.hasItemMeta() && main.getItemMeta().hasDisplayName()) {
@@ -44,6 +55,10 @@ public class PreventPlacementListener implements Listener {
         // Read from config
         ConfigurationSection lamp = plugin.getConfig().getConfigurationSection("shop.luminous-lantern");
         String luminousLantern = lamp.getString("name");
+        List<String> lantern = Arrays.asList(
+            "PLAYER_HEAD",
+            "PLAYER_WALL_HEAD"
+        );
 
         ConfigurationSection playerhead = plugin.getConfig().getConfigurationSection("shop.playerhead");
         String head = "§f" + player.getName() + "'s Head";
@@ -68,31 +83,26 @@ public class PreventPlacementListener implements Listener {
 
         // Lantern
         if (displayName.equals(luminousLantern)) {
-            Block placedBlock = event.getBlock();
-            Block clicked = event.getBlockAgainst();
-            BlockFace face = getBlockFace(placedBlock, clicked);
             if (face == null) return;
 
-            Block target = clicked.getRelative(face);
-            Block below = target.getRelative(BlockFace.DOWN);
+            Block supportBlock = isHanging ? above : below;
 
-            if (placedBlockType.equals(lamp.getString("material")) 
-                && (below.getType().isSolid() || below.getType().isFlammable())) {
+            if (placedBlockType.equals(lamp.getString("material"))) {
                 event.setCancelled(true);
                 BlockIgniteEvent igniteEvent = new BlockIgniteEvent(
-                    target, BlockIgniteEvent.IgniteCause.FLINT_AND_STEEL, player
+                    placedBlock, BlockIgniteEvent.IgniteCause.FLINT_AND_STEEL, player
                 );
                 Bukkit.getPluginManager().callEvent(igniteEvent);
 
                 if (!igniteEvent.isCancelled()) {
                     Bukkit.getScheduler().runTask(plugin, () -> {
-                        if (below.getType() == Material.SOUL_SOIL || below.getType() == Material.SOUL_SAND) {
+                        if (supportBlock.getType() == Material.SOUL_SOIL || supportBlock.getType() == Material.SOUL_SAND) {
                             placedBlock.setType(Material.SOUL_FIRE);
                         } else {
-                            target.setType(Material.FIRE);
+                            placedBlock.setType(Material.FIRE);
                         }
                     });
-                    player.getWorld().playSound(target.getLocation(), org.bukkit.Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.0f);
+                    player.getWorld().playSound(placedBlock.getLocation(), org.bukkit.Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.0f);
                 } else {
                     player.sendMessage("§cFire ignition was blocked by another plugin.");
                 }
