@@ -59,9 +59,11 @@ public class CraftingInteractListener implements Listener {
             int maxStack = item.getMaxStackSize();
             if (newAmount > maxStack) {
                 newAmount = maxStack;
+                item.setAmount(newAmount);
+                player.getInventory().setItemInMainHand(item);
+            } else {
+                player.getInventory().addItem(item.clone());
             }
-            item.setAmount(newAmount);
-            player.getInventory().setItemInMainHand(item);
         }
     }
 

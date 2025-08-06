@@ -15,6 +15,7 @@ import org.bukkit.Location;
 import org.bukkit.event.block.Action;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.World.Environment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,37 +54,68 @@ public class ExplosionPatch implements OnUseItem {
 
     @Override
     public void onUse(Player player, ItemStack item, PlayerInteractEvent event) {
+        event.setCancelled(true);
         Location playerLoc = player.getLocation();
         Block below = playerLoc.clone().subtract(0, 1, 0).getBlock();
-        boolean useSand = below.getType() == Material.SAND;
 
-        Material baseMaterial = useSand ? Material.SAND : Material.DIRT;
-        Material topMaterial = useSand ? Material.SAND : Material.GRASS_BLOCK;
+        // Detect if the player is in the Nether
+        boolean isNether = playerLoc.getWorld().getEnvironment() == Environment.NETHER;
+        boolean useSand = !isNether && below.getType() == Material.SAND;
+
+        Material baseMaterial;
+        Material topMaterial;
+
+        if (isNether) {
+            baseMaterial = Material.NETHERRACK;
+            topMaterial = Material.NETHERRACK;
+        } else if (useSand) {
+            baseMaterial = Material.SAND;
+            topMaterial = Material.SAND;
+        } else {
+            baseMaterial = Material.DIRT;
+            topMaterial = Material.GRASS_BLOCK;
+        }
 
         // Direction player is facing
         Vector dir = playerLoc.getDirection().normalize();
 
         // Center of fill area (a few blocks in front of player)
         Location center = playerLoc.clone().add(dir.multiply(2));
+        int baseY = playerLoc.getBlockY()-1; // Use player height as reference
 
         int radius = 4;
-        int height = 3;
+        int depth = 4; // Increased depth
 
-        // Iterate through a 3D radial area
+        // Blocks to replace (not just air)
+        List<Material> replaceable = List.of(
+                Material.AIR,
+                Material.SNOW,
+                Material.SNOW_BLOCK,
+                Material.TALL_GRASS,
+                Material.SHORT_GRASS,
+                Material.FERN,
+                Material.LARGE_FERN,
+                Material.DEAD_BUSH,
+                Material.FIRE,
+                Material.PINK_PETALS,
+                Material.WILDFLOWERS,
+                Material.LEAF_LITTER,
+                Material.MOSS_CARPET 
+        );
+
         for (int x = -radius; x <= radius; x++) {
             for (int z = -radius; z <= radius; z++) {
-                if (Math.sqrt(x * x + z * z) > radius) continue; // outside circle
+                if (Math.sqrt(x * x + z * z) > radius) continue;
 
-                for (int y = 0; y < height-1; y++) {
-                    Location blockLoc = center.clone().add(x, y-1, z);
+                for (int y = 0; y > -depth; y--) {
+                    Location blockLoc = new Location(center.getWorld(), center.getX() + x, baseY + y, center.getZ() + z);
                     Block block = blockLoc.getBlock();
 
-                    if (block.getType() == Material.AIR) {
-                        // If it's the topmost layer, use grass (if applicable)
-                        if (y == height - 2 && !useSand) {
-                            block.setType(topMaterial);
+                    if (replaceable.contains(block.getType()) || block.isPassable()) {
+                        if (y == 0) {
+                            block.setType(topMaterial); // Top layer
                         } else {
-                            block.setType(baseMaterial);
+                            block.setType(baseMaterial); // Lower layers
                         }
                     }
                 }
@@ -93,4 +125,5 @@ public class ExplosionPatch implements OnUseItem {
         // Consume one item
         item.setAmount(item.getAmount() - 1);
     }
+
 }

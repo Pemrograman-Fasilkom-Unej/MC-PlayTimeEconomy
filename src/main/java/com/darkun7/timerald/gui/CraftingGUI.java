@@ -84,7 +84,7 @@ public class CraftingGUI {
 
         // Handle crafting logic
         if (slot == CRAFT_BUTTON_SLOT) {
-            List<String> shape = plugin.getConfig().getStringList("crafting.potion-of-flight.shape");
+            List<String> shape = plugin.getConfig().getStringList("crafting.wormhole-potion.shape");
 
             boolean match = true;
             for (int i = 0; i < CRAFT_SLOTS.size(); i++) {

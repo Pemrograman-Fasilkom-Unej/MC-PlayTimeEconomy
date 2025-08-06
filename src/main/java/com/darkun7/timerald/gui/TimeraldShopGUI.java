@@ -23,6 +23,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.ChatColor;
 import java.util.stream.Collectors;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.HashSet;
@@ -133,6 +134,7 @@ public class TimeraldShopGUI implements Listener {
                 }
                 meta.getPersistentDataContainer().set(shopItemKey, PersistentDataType.INTEGER, 1);
                 item.setItemMeta(meta);
+                item.setAmount(section.getInt("amount"));
 
                 gui.setItem(position, item);
             }
@@ -273,12 +275,17 @@ public class TimeraldShopGUI implements Listener {
                 }
 
                 item.setItemMeta(itemMeta);
-                manager.subtract(uuid, cost);
-                player.getInventory().addItem(item);
-                player.sendMessage("§aPurchased §f" + section.getString("name") + " §afor §b" + cost + " Timerald.");
+                item.setAmount(section.getInt("amount"));
+                HashMap<Integer, ItemStack> remaining = player.getInventory().addItem(item);
+                if (!remaining.isEmpty()) {
+                    player.sendMessage("§cNot enough inventory space to complete the purchase.");
+                } else {
+                    manager.subtract(uuid, cost);
+                    player.sendMessage("§aPurchased §f" + section.getString("name") + " §afor §b" + cost + " Timerald.");
+                }
 
                 recentlyClicked.remove(uuid);
             }
-        }, 10L);
+        }, 5L);
     }
 }

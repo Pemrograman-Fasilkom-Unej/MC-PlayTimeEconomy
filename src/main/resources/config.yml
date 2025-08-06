@@ -1,4 +1,4 @@
-config-version: "240729-pre01"
+config-version: "250806-pre01"
 shop:
   playtime:
     "1":
@@ -41,6 +41,7 @@ shop:
   luminous-lantern:
     type: wearable
     cost: 128
+    amount: 1
     material: SOUL_LANTERN
     name: "§f<§bLuminous §9Lantern§f>"
     position: 19
@@ -55,6 +56,7 @@ shop:
   time-elixir:
     type: consumable
     cost: 64
+    amount: 1
     material: POTION
     name: "§f<§aTime §2Elixir§f>"
     position: 20
@@ -71,6 +73,7 @@ shop:
     type: wearable
     material: PLAYER_HEAD
     cost: 32
+    amount: 1
     name: "§6Your Head"
     position: 21
     lore:
@@ -88,6 +91,7 @@ shop:
     position: 22
     enchanted: true
     cost: 32
+    amount: 1
     lore:
       - "§7Right click to use"
       - "§7Teleport back to your bed or world spawn."
@@ -100,6 +104,7 @@ shop:
     position: 22
     enchanted: true
     cost: 32
+    amount: 1
     lore:
       - "§7Drink it to use"
       - "§7Teleport back to your bed or world spawn."
@@ -108,6 +113,7 @@ shop:
   lava-chicken:
     type: consumable
     cost: 24
+    amount: 1
     material: COOKED_CHICKEN
     name: "§f<§cLava §6Chicken§f>"
     position: 23
@@ -122,6 +128,7 @@ shop:
   nymph-snack:
     type: consumable
     cost: 16
+    amount: 1
     material: DRIED_KELP
     name: "§f<§bNymph's §3snack§f>"
     position: 24
@@ -142,6 +149,7 @@ shop:
     enchanted: false
     xp: 910
     cost: 8
+    amount: 1
     lore:
       - "§7Right click to store XP"
       - "§7Materialize your XP as boook."
@@ -151,6 +159,7 @@ shop:
   explosion-patch:
     type: on-use
     cost: 4
+    amount: 2
     material: ARMS_UP_POTTERY_SHERD
     name: "§f<§7Explosion §8Patch§f>"
     position: 28
@@ -162,6 +171,7 @@ shop:
   smoke-bomb:
     type: on-use
     cost: 4
+    amount: 4
     material: FIREWORK_STAR
     name: "§f<§7Smoke §8Bomb§f>"
     position: 29
@@ -178,11 +188,20 @@ shop:
 
 
 crafting:
-  potion-of-flight:
+  wormhole-potion:
     shape:
       - escape-feather POTION:THICK AIR
       - AIR AIR AIR
       - AIR AIR AIR
     result:
-      variation: wormhole-potion
-
+      item: wormhole-potion
+      variation: custom
+  
+  ENCHANTED_GOLDEN_APPLE:
+    shape:
+      - GOLDEN_APPLE GOLDEN_APPLE GOLDEN_APPLE
+      - GOLDEN_APPLE GOLDEN_APPLE GOLDEN_APPLE
+      - GOLDEN_APPLE GOLDEN_APPLE GOLDEN_APPLE
+    result:
+      item: ENCHANTED_GOLDEN_APPLE
+      variation: original
