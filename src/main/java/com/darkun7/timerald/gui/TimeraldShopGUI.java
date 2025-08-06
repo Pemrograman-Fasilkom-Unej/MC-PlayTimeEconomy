@@ -229,7 +229,7 @@ public class TimeraldShopGUI implements Listener {
 
                 manager.subtract(uuid, cost);
                 PlayTimeLimiterAPI api = PlayTimeLimiter.getInstance().getAPI();
-                api.reduceDailyUsed(uuid, minutes);
+                api.addDailyExtra(uuid, minutes);
                 player.sendMessage("§aPurchased §f" + minutes + " minute(s) §afor §b" + cost + " Timerald§a.");
                 return;
             }

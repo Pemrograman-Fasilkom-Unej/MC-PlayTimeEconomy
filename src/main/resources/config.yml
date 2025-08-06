@@ -9,7 +9,7 @@ shop:
       minutes: 2
       lore:
         - "§7Click to buy"
-        - "§fReduce daily playtime §62 §fminute"
+        - "§fAdd extra daily playtime §62 §fminute"
     "5":
       cost: 20
       material: CLOCK
@@ -18,7 +18,7 @@ shop:
       minutes: 10
       lore:
         - "§7Click to buy"
-        - "§fReduce daily playtime §610 §fminute"
+        - "§fAdd extra daily playtime §610 §fminute"
     "10":
       cost: 40
       material: CLOCK
@@ -27,7 +27,7 @@ shop:
       minutes: 20
       lore:
         - "§7Click to buy"
-        - "§fReduce daily playtime §620 §fminutes"
+        - "§fAdd extra daily playtime §620 §fminutes"
     "20":
       cost: 64
       material: CLOCK
@@ -36,7 +36,7 @@ shop:
       minutes: 40
       lore:
         - "§7Click to buy"
-        - "§fReduce daily playtime §640 §fminutes"
+        - "§fAdd extra daily playtime §640 §fminutes"
 
   luminous-lantern:
     type: wearable
