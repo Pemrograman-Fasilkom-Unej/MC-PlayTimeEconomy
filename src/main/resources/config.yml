@@ -1,4 +1,4 @@
-config-version: "250806-pre01"
+config-version: "250806-pre05"
 shop:
   playtime:
     "1":
@@ -96,12 +96,14 @@ shop:
       - "§7Right click to use"
       - "§7Teleport back to your bed or world spawn."
       - "§eOnly usable in the §4Nether §eand §dEnd." 
+    match:
+      check: [material, name, lore]
 
   wormhole-potion:
     type: consumable
     material: POTION
     name: "§f<§bWormhole §9potion§f>"
-    position: 22
+    position: 0
     enchanted: true
     cost: 32
     amount: 1
@@ -171,20 +173,32 @@ shop:
   smoke-bomb:
     type: on-use
     cost: 4
-    amount: 4
+    amount: 2
     material: FIREWORK_STAR
-    name: "§f<§7Smoke §8Bomb§f>"
+    name: "§f<§7Smoke Bomb§f>"
     position: 29
     enchanted: true
     lore:
       - "§7Right click to use"
       - "§7Grants §finvisibility §7and §fspeed"
     effects:
-      - INVISIBILITY:16:1
+      - INVISIBILITY:12:1
       - SPEED:16:1
     particles:
       type: LARGE_SMOKE
       amount: 20
+  
+  clockwork-bomb:
+    type: on-use
+    cost: 0
+    amount: 1
+    material: TNT
+    name: "§f<§6Clockwork §7Bomb§f>"
+    position: 0
+    enchanted: true
+    lore:
+      - "§7Placeblock to use"
+      - "§7Explode after 5 second."
 
 
 crafting:
@@ -197,11 +211,20 @@ crafting:
       item: wormhole-potion
       variation: custom
   
-  ENCHANTED_GOLDEN_APPLE:
+  e-golden-apple:
     shape:
-      - GOLDEN_APPLE GOLDEN_APPLE GOLDEN_APPLE
-      - GOLDEN_APPLE GOLDEN_APPLE GOLDEN_APPLE
-      - GOLDEN_APPLE GOLDEN_APPLE GOLDEN_APPLE
+      - GOLDEN_APPLE GOLDEN_APPLE AIR
+      - GOLDEN_APPLE GOLDEN_APPLE AIR
+      - AIR AIR AIR
     result:
       item: ENCHANTED_GOLDEN_APPLE
       variation: original
+  
+  clockwork-bomb:
+    shape:
+      - CLOCK TNT REDSTONE
+      - AIR AIR AIR
+      - AIR AIR AIR
+    result:
+      item: clockwork-bomb
+      variation: custom

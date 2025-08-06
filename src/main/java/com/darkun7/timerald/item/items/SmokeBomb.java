@@ -72,6 +72,7 @@ public class SmokeBomb implements OnUseItem {
 
     @Override
     public void onUse(Player player, ItemStack item, PlayerInteractEvent event) {
+        event.setCancelled(true);
         for (PotionEffect effect : effects) {
             player.addPotionEffect(effect);
         }

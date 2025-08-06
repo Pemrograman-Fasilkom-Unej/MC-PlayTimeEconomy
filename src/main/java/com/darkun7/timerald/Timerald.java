@@ -30,7 +30,7 @@ public final class Timerald extends JavaPlugin {
         saveDefaultConfig();
 
         String currentVersion = getConfig().getString("config-version", "0");
-        String expectedVersion = "250806-pre01";
+        String expectedVersion = "250806-pre05";
         if (currentVersion != expectedVersion) {
             getLogger().warning("Outdated config.yml detected! Regenerating with default values...");
 
@@ -57,6 +57,7 @@ public final class Timerald extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CustomItemListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
         getServer().getPluginManager().registerEvents(new TickItemListener(this), this);
+        getServer().getPluginManager().registerEvents(new BlockPlaceListener(this), this);
         getServer().getPluginManager().registerEvents(new PreventPlacementListener(this), this);
         getServer().getPluginManager().registerEvents(clickChainListener, this);
         getServer().getPluginManager().registerEvents(new CraftingInteractListener(this), this);

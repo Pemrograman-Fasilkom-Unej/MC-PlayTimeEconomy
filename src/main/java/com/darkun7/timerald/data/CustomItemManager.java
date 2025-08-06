@@ -20,10 +20,11 @@ public class CustomItemManager {
         if (!config.contains("shop")) return;
 
         for (String key : config.getConfigurationSection("shop").getKeys(false)) {
+            if (key == "playtime") continue;
             String path = "shop." + key;
             String matName = config.getString(path + ".material");
             if (matName == null || matName.isEmpty()) {
-                Bukkit.getLogger().warning("[CustomItemManager] Missing material for: " + key);
+                Bukkit.getLogger().warning("[Timerald:CustomItem] Missing material for: " + key);
                 continue;
             }
 
@@ -31,7 +32,7 @@ public class CustomItemManager {
             try {
                 material = Material.valueOf(matName.toUpperCase());
             } catch (IllegalArgumentException ex) {
-                Bukkit.getLogger().warning("[CustomItemManager] Invalid material '" + matName + "' for item: " + key);
+                Bukkit.getLogger().warning("[Timerald:CustomItem] Invalid material '" + matName + "' for item: " + key);
                 continue;
             }
 
@@ -54,72 +55,72 @@ public class CustomItemManager {
             }
 
             item.setItemMeta(meta);
-            items.put(key, item);
+            items.put(key.toLowerCase(), item);
         }
 
-        Bukkit.getLogger().info("[CustomItemManager] Loaded " + items.size() + " custom items.");
+        Bukkit.getLogger().info("[Timerald:CustomItem] Loaded " + items.size() + " custom items.");
     }
 
 
     public static ItemStack getItem(String key) {
-        return items.get(key);
+        return items.get(key.toLowerCase());
     }
+
 
     public static boolean matches(ItemStack item, String idOrMaterialName) {
         if (idOrMaterialName == null || idOrMaterialName.equalsIgnoreCase("AIR")) {
             return item == null || item.getType() == Material.AIR;
         }
 
-        // Split material and variation (e.g. "POTION:THICK")
         String[] parts = idOrMaterialName.split(":");
-        String base = parts[0];
+        String base = parts[0].toLowerCase();
 
-        // Check for custom item first
-        ItemStack expected = items.get(base);
-        if (expected != null) {
-            return matchesCustomItem(item, expected);
+        // Check custom item
+        if (items.containsKey(base)) {
+            return matchesCustomItem(item, base);
         }
 
-        // Check for vanilla material
+        // Vanilla material check
         try {
             Material mat = Material.valueOf(base.toUpperCase());
             if (item == null || item.getType() != mat) return false;
 
             // Potion variant check
             if (mat == Material.POTION && parts.length > 1) {
-                String variant = parts[1].toUpperCase();
                 if (!(item.getItemMeta() instanceof PotionMeta meta)) return false;
-
-                PotionType type;
                 try {
-                    type = PotionType.valueOf(variant);
+                    return meta.getBasePotionData().getType() == PotionType.valueOf(parts[1].toUpperCase());
                 } catch (IllegalArgumentException e) {
                     return false;
                 }
-
-                return meta.getBasePotionData().getType() == type;
             }
-
             return true;
         } catch (IllegalArgumentException e) {
             return false;
         }
     }
 
-    private static boolean matchesCustomItem(ItemStack item, ItemStack expected) {
-        if (item == null || item.getType() != expected.getType()) return false;
-        if (!item.hasItemMeta() || !expected.hasItemMeta()) return false;
+
+    private static boolean matchesCustomItem(ItemStack item, String key) {
+        if (item == null) return false;
+
+        ItemStack expected = items.get(key.toLowerCase());
+        if (expected == null || item.getType() != expected.getType()) return false;
 
         ItemMeta actualMeta = item.getItemMeta();
         ItemMeta expectedMeta = expected.getItemMeta();
 
+        if (actualMeta == null || expectedMeta == null) return false;
         if (!Objects.equals(actualMeta.getDisplayName(), expectedMeta.getDisplayName())) return false;
+
         if (actualMeta.hasLore() && expectedMeta.hasLore()) {
             return Objects.equals(actualMeta.getLore(), expectedMeta.getLore());
         }
 
         return !actualMeta.hasLore() && !expectedMeta.hasLore();
     }
+
+
 
 
 }

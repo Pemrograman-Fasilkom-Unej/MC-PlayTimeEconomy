@@ -11,11 +11,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.Bukkit;
 
 import com.darkun7.timerald.gui.CraftingGUI;
 import java.util.List;
@@ -34,6 +36,8 @@ public class CraftingInteractListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         CraftingGUI.handleClick(event, plugin);
+        CraftingGUI.onRecipeListClick(event, plugin);
+        CraftingGUI.onRecipePreviewClick(event);
     }
 
     @EventHandler
@@ -85,11 +89,11 @@ public class CraftingInteractListener implements Listener {
             }
         }
 
-        ItemStack result = inv.getItem(CraftingGUI.RESULT_SLOT);
-        if (result != null && result.getType() != Material.AIR) {
-            toReturn.add(result.clone());
-            inv.setItem(CraftingGUI.RESULT_SLOT, new ItemStack(Material.AIR));
-        }
+        // ItemStack result = inv.getItem(CraftingGUI.RESULT_SLOT);
+        // if (result != null && result.getType() != Material.AIR) {
+        //     toReturn.add(result.clone());
+        //     inv.setItem(CraftingGUI.RESULT_SLOT, new ItemStack(Material.AIR));
+        // }
 
         // Return items AFTER clearing inventory
         for (ItemStack item : toReturn) {
@@ -101,6 +105,21 @@ public class CraftingInteractListener implements Listener {
             }
         }
     }
+
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (!event.getView().getTitle().equals(CraftingGUI.TITLE)) return;
+
+        // If drag affects any crafting slots → update preview next tick
+        for (int slot : event.getRawSlots()) {
+            if (CraftingGUI.CRAFT_SLOTS.contains(slot)) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> 
+                    CraftingGUI.updatePreview(event.getInventory(), plugin), 1L);
+                break;
+            }
+        }
+    }
+
 
 
 
