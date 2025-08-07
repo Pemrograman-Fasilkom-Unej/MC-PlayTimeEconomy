@@ -30,7 +30,7 @@ public class EscapeFeather implements OnUseItem {
             throw new IllegalStateException("Missing 'shop.escape-feather' config section.");
         }
 
-        this.displayName = section.getString("name", "&f<&6Escape &eFeather&f>");
+        this.displayName = section.getString("name", "§f<§6Escape §eFeather§f>");
         this.material = Material.getMaterial(section.getString("material", "FEATHER").toUpperCase());
         this.lore = section.getStringList("lore");
     }

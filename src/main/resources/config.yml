@@ -1,4 +1,4 @@
-config-version: "250806-pre05"
+config-version: "250806-pre06"
 shop:
   playtime:
     "1":
@@ -96,21 +96,6 @@ shop:
       - "§7Right click to use"
       - "§7Teleport back to your bed or world spawn."
       - "§eOnly usable in the §4Nether §eand §dEnd." 
-    match:
-      check: [material, name, lore]
-
-  wormhole-potion:
-    type: consumable
-    material: POTION
-    name: "§f<§bWormhole §9potion§f>"
-    position: 0
-    enchanted: true
-    cost: 32
-    amount: 1
-    lore:
-      - "§7Drink it to use"
-      - "§7Teleport back to your bed or world spawn."
-      - "§eRing bell to return to teleported location." 
 
   lava-chicken:
     type: consumable
@@ -187,7 +172,8 @@ shop:
     particles:
       type: LARGE_SMOKE
       amount: 20
-  
+
+  # Craftable
   clockwork-bomb:
     type: on-use
     cost: 0
@@ -199,9 +185,44 @@ shop:
     lore:
       - "§7Placeblock to use"
       - "§7Explode after 5 second."
+  
+  wormhole-potion:
+    type: consumable
+    material: POTION
+    name: "§f<§bWormhole §9potion§f>"
+    position: 0
+    enchanted: true
+    cost: 0
+    amount: 1
+    lore:
+      - "§7Drink it to use"
+      - "§7Teleport back to your bed or world spawn."
+      - "§eRing bell to return to teleported location." 
 
+  return-crystal:
+    type: on-use
+    material: AMETHYST_SHARD
+    name: "§f<§dReturn §9Crystal§f>"
+    position: 0
+    enchanted: true
+    cost: 0
+    amount: 1
+    lore:
+      - "§7Right click to use"
+      - "§7Teleport back to selected position."
+      - "§7Set position by right click Lodestone." 
+      - "§f[3/3]"
 
 crafting:
+  e-golden-apple:
+    shape:
+      - GOLDEN_APPLE GOLDEN_APPLE AIR
+      - GOLDEN_APPLE GOLDEN_APPLE AIR
+      - AIR AIR AIR
+    result:
+      item: ENCHANTED_GOLDEN_APPLE
+      variation: original
+    
   wormhole-potion:
     shape:
       - escape-feather POTION:THICK AIR
@@ -211,14 +232,14 @@ crafting:
       item: wormhole-potion
       variation: custom
   
-  e-golden-apple:
+  return-crystal:
     shape:
-      - GOLDEN_APPLE GOLDEN_APPLE AIR
-      - GOLDEN_APPLE GOLDEN_APPLE AIR
-      - AIR AIR AIR
+      - AMETHYST_SHARD AMETHYST_SHARD AMETHYST_SHARD
+      - wormhole-potion wormhole-potion wormhole-potion
+      - AMETHYST_SHARD AMETHYST_SHARD AMETHYST_SHARD
     result:
-      item: ENCHANTED_GOLDEN_APPLE
-      variation: original
+      item: return-crystal
+      variation: custom
   
   clockwork-bomb:
     shape:
@@ -228,3 +249,4 @@ crafting:
     result:
       item: clockwork-bomb
       variation: custom
+  

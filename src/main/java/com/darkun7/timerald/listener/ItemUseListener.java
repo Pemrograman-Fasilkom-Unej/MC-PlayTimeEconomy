@@ -6,6 +6,7 @@ import com.darkun7.timerald.item.items.SmokeBomb;
 import com.darkun7.timerald.item.items.EscapeFeather;
 import com.darkun7.timerald.item.items.ExplosionPatch;
 import com.darkun7.timerald.item.items.BookKnowledge;
+import com.darkun7.timerald.item.items.ReturnCrystal;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,6 +29,7 @@ public class ItemUseListener implements Listener {
         registeredItems.add(new EscapeFeather(plugin));
         registeredItems.add(new ExplosionPatch(plugin));
         registeredItems.add(new BookKnowledge(plugin));
+        registeredItems.add(new ReturnCrystal(plugin));
         // Add more items here later
     }
 

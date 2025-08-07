@@ -41,7 +41,7 @@ public class CraftingInteractListener implements Listener {
     }
 
     @EventHandler
-    public void onRightClick(PlayerInteractEvent event) {
+    public void onRightClickCraftingTable(PlayerInteractEvent event) {
         if (event.getHand() != EquipmentSlot.HAND) return;
         if (event.getClickedBlock() == null) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
@@ -52,21 +52,50 @@ public class CraftingInteractListener implements Listener {
         CraftingGUI.open(event.getPlayer());
         // Prevent normal crafting table GUI
         event.setCancelled(true);
+    }
 
-        // Check block below for DEBUG
+    @EventHandler
+    public void debugOnPre(PlayerInteractEvent event) {
+        if (event.getHand() != EquipmentSlot.HAND) return;
+        if (event.getClickedBlock() == null) return;
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+
+        Block clicked = event.getClickedBlock();
+        if (clicked.getType() != Material.IRON_BLOCK) return;
+
         Block below = clicked.getRelative(BlockFace.DOWN);
-        if (below.getType() != Material.OBSIDIAN) return;
+        if (below.getType() != Material.CRAFTING_TABLE) return;
+
         Player player = event.getPlayer();
+
+        Block playerBlockBelow = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
+        if (!playerBlockBelow.getLocation().equals(clicked.getLocation())) return;
+
+        event.setCancelled(true);
+
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (item != null && item.getType() != org.bukkit.Material.AIR) {
-            int newAmount = item.getAmount() * 4;
+        if (item == null || item.getType() == Material.AIR) return;
+
+        if (isToolOrArmor(item.getType())) return;
+
+        if (item.getMaxStackSize() > 1) {
+            int multiply = 2;
+            int totalAmount = item.getAmount() * multiply;
             int maxStack = item.getMaxStackSize();
-            if (newAmount > maxStack) {
-                newAmount = maxStack;
-                item.setAmount(newAmount);
-                player.getInventory().setItemInMainHand(item);
-            } else {
-                player.getInventory().addItem(item.clone());
+
+            player.getInventory().setItemInMainHand(null);
+
+            while (totalAmount > 0) {
+                int toAdd = Math.min(maxStack, totalAmount);
+                ItemStack clone = item.clone();
+                clone.setAmount(toAdd);
+                player.getInventory().addItem(clone);
+                totalAmount -= toAdd;
+            }
+
+        } else {
+            for (int i = 0; i < 1; i++) {
+                player.getWorld().dropItemNaturally(player.getLocation(), item.clone());
             }
         }
     }
@@ -120,6 +149,36 @@ public class CraftingInteractListener implements Listener {
         }
     }
 
+    private boolean isToolOrArmor(Material material) {
+        String name = material.name();
+
+        // Check for tools
+        if (name.endsWith("_SWORD") ||
+            name.endsWith("_PICKAXE") ||
+            name.endsWith("_AXE") ||
+            name.endsWith("_SHOVEL") ||
+            name.endsWith("_HOE") ||
+            name.equals("FLINT_AND_STEEL") ||
+            name.equals("SHEARS") ||
+            name.equals("FISHING_ROD") ||
+            name.equals("BOW") ||
+            name.equals("CROSSBOW") ||
+            name.equals("SHIELD") ||
+            name.equals("TRIDENT")) {
+            return true;
+        }
+
+        // Check for armor
+        if (name.endsWith("_HELMET") ||
+            name.endsWith("_CHESTPLATE") ||
+            name.endsWith("_LEGGINGS") ||
+            name.endsWith("_BOOTS") ||
+            name.equals("ELYTRA")) {
+            return true;
+        }
+
+        return false;
+    }
 
 
 

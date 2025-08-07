@@ -16,6 +16,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.World.Environment;
+import org.bukkit.block.Biome;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +62,7 @@ public class ExplosionPatch implements OnUseItem {
         // Detect if the player is in the Nether
         boolean isNether = playerLoc.getWorld().getEnvironment() == Environment.NETHER;
         boolean useSand = !isNether && below.getType() == Material.SAND;
+        Biome biome = playerLoc.getWorld().getBiome(playerLoc);
 
         Material baseMaterial;
         Material topMaterial;
@@ -71,6 +73,9 @@ public class ExplosionPatch implements OnUseItem {
         } else if (useSand) {
             baseMaterial = Material.SAND;
             topMaterial = Material.SAND;
+        } else if (biome == Biome.MUSHROOM_FIELDS) {
+            baseMaterial = Material.DIRT;
+            topMaterial = Material.MYCELIUM;
         } else {
             baseMaterial = Material.DIRT;
             topMaterial = Material.GRASS_BLOCK;
