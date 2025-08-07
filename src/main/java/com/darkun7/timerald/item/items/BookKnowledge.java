@@ -15,6 +15,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.Sound;
+import org.bukkit.inventory.meta.Damageable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -146,11 +147,11 @@ public class BookKnowledge implements OnUseItem {
             BookMeta meta = (BookMeta) item.getItemMeta();
             if (meta != null && meta.getPersistentDataContainer().has(knowledgeKey, PersistentDataType.INTEGER)) {
                 int storedXp = meta.getPersistentDataContainer().get(knowledgeKey, PersistentDataType.INTEGER);
-                setTotalXP(player, getTotalXP(player) + storedXp);
+                applyMending(player, xpToStore);
                 
                 Random random = new Random();
                 int chance = random.nextInt(100);
-                boolean loseItem = chance < 25;
+                boolean loseItem = chance < 50;
 
                 if (loseItem) {
                     item.setAmount(item.getAmount() - 1);
@@ -233,4 +234,30 @@ public class BookKnowledge implements OnUseItem {
         if (level <= 30) return 5 * level - 38;
         return 9 * level - 158;
     }
+
+    private void applyMending(Player player, int xp) {
+        int remainingXp = xp;
+
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item == null || !item.containsEnchantment(Enchantment.MENDING)) continue;
+
+            ItemMeta meta = item.getItemMeta();
+            if (!(item.getItemMeta() instanceof Damageable)) continue;
+
+            Damageable damageable = (Damageable) item.getItemMeta();
+            if (damageable.getDamage() > 0) {
+                int repairAmount = Math.min(damageable.getDamage(), remainingXp * 2); // 2 durability per XP
+                damageable.setDamage(damageable.getDamage() - repairAmount);
+                item.setItemMeta(damageable);
+                remainingXp -= (repairAmount + 1) / 2;
+
+                if (remainingXp <= 0) break;
+            }
+        }
+
+        if (remainingXp > 0) {
+            setTotalXP(player, getTotalXP(player) + remainingXp);
+        }
+    }
+
 }
