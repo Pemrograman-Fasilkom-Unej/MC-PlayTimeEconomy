@@ -255,6 +255,19 @@ public class BookKnowledge implements OnUseItem {
             }
         }
 
+        // Check offhand first (or after main inventory, depending on priority)
+        ItemStack offhand = player.getInventory().getItemInOffHand();
+        if (offhand != null && offhand.containsEnchantment(Enchantment.MENDING) && offhand.getItemMeta() instanceof Damageable) {
+            Damageable damageable = (Damageable) offhand.getItemMeta();
+            if (damageable.getDamage() > 0) {
+                int repairAmount = Math.min(damageable.getDamage(), remainingXp * 2);
+                damageable.setDamage(damageable.getDamage() - repairAmount);
+                offhand.setItemMeta(damageable);
+                remainingXp -= (repairAmount + 1) / 2;
+            }
+        }
+
+
         if (remainingXp > 0) {
             setTotalXP(player, getTotalXP(player) + remainingXp);
         }
