@@ -8,6 +8,7 @@ import com.darkun7.timerald.command.WithdrawCommand;
 import com.darkun7.timerald.command.TimeraldCommand;
 import com.darkun7.timerald.command.TimeraldTabCompleter;
 import com.darkun7.timerald.gui.TimeraldShopGUI;
+import com.darkun7.timerald.gui.ShopGUI;
 import com.darkun7.timerald.command.ShopCommand;
 import com.darkun7.timerald.command.ShopTabCompleter;
 
@@ -23,6 +24,7 @@ public final class Timerald extends JavaPlugin {
     private static Timerald instance;
     private TimeraldManager timeraldManager;
     private ShopManager shopManager;
+    private ShopGUI shopGUI;
 
     @Override
     public void onEnable() {
@@ -50,6 +52,7 @@ public final class Timerald extends JavaPlugin {
 
         // START: UNDER DEVELOPMENT
         CustomItemManager.load(getConfig());
+        this.shopGUI = new ShopGUI(this, this.shopManager);
         // END: UNDER DEVELOPMENT
 
 
@@ -66,7 +69,7 @@ public final class Timerald extends JavaPlugin {
         getCommand("withdraw").setExecutor(new WithdrawCommand(this));
         getCommand("timerald").setExecutor(new TimeraldCommand(this, clickChainListener));
         getCommand("timerald").setTabCompleter(new TimeraldTabCompleter());
-        getCommand("shop").setExecutor(new ShopCommand(this, this.shopManager));
+        getCommand("shop").setExecutor(new ShopCommand(this, this.shopManager, this.shopGUI));
         getCommand("shop").setTabCompleter(new ShopTabCompleter(this.shopManager));
         
         new TimeraldShopGUI(this);

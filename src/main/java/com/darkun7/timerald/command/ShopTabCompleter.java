@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import com.darkun7.timerald.shop.ShopItem;
@@ -31,7 +32,7 @@ public class ShopTabCompleter implements TabCompleter {
         List<String> completions = new ArrayList<>();
 
         if (args.length == 1) {
-            List<String> subcommands = Arrays.asList("stash", "sell", "cancel", "visit");
+            List<String> subcommands = Arrays.asList("stash", "sell", "order", "visit");
             for (String sub : subcommands) {
                 if (sub.startsWith(args[0].toLowerCase())) {
                     completions.add(sub);
@@ -45,29 +46,54 @@ public class ShopTabCompleter implements TabCompleter {
             completions.addAll(Arrays.asList("@1", "@16", "@32", "@64"));
         }
 
-        else if (args.length == 2 && args[0].equalsIgnoreCase("cancel")) {
-            Player player = (Player) sender;
-            UUID uuid = player.getUniqueId();
+        // else if (args.length == 2 && args[0].equalsIgnoreCase("cancel")) {
+        //     Player player = (Player) sender;
+        //     UUID uuid = player.getUniqueId();
 
-            PlayerShop targetShop = shopManager.getShop(uuid);
-            List<ShopItem> listings = targetShop.getListings();
-            for (int i = 0; i < listings.size(); i++) {
-                completions.add(String.valueOf(i));
-            }
-            // PlayerShop shop = YourPlugin.getInstance().getShopManager().getShop(uuid);
+        //     PlayerShop targetShop = shopManager.getShop(uuid);
+        //     List<ShopItem> listings = targetShop.getListings();
+        //     for (int i = 0; i < listings.size(); i++) {
+        //         completions.add(String.valueOf(i));
+        //     }
+        //     // PlayerShop shop = YourPlugin.getInstance().getShopManager().getShop(uuid);
 
-            // if (shop != null) {
-            //     for (int i = 0; i < shop.getListings().size(); i++) {
-            //         completions.add(String.valueOf(i));
-            //     }
-            // }
-        }
+        //     // if (shop != null) {
+        //     //     for (int i = 0; i < shop.getListings().size(); i++) {
+        //     //         completions.add(String.valueOf(i));
+        //     //     }
+        //     // }
+        // }
 
         else if (args.length == 2 && args[0].equalsIgnoreCase("visit")) {
             for (Player online : Bukkit.getOnlinePlayers()) {
                 if (online.getName().toLowerCase().startsWith(args[1].toLowerCase())) {
                     completions.add(online.getName());
                 }
+            }
+        }
+
+        else if (args[0].equalsIgnoreCase("order")) {
+            switch (args.length) {
+                case 2:
+                    // Suggest items — use Bukkit's Material enum
+                    return Arrays.stream(Material.values())
+                            .filter(m -> m.isItem())
+                            .map(m -> m.name().toLowerCase())
+                            .filter(name -> name.startsWith(args[1].toLowerCase()))
+                            .limit(50) // Prevent spam
+                            .toList();
+
+                case 3:
+                    // Price suggestions
+                    return Arrays.asList("10", "50", "100", "250");
+
+                case 4:
+                    // Quantity (must start with "@")
+                    return Arrays.asList("@1", "@16", "@32", "@64");
+
+                case 5:
+                    // Limit suggestions
+                    return Arrays.asList("1", "5", "10");
             }
         }
 

@@ -6,6 +6,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.entity.Player;
+import org.bukkit.Bukkit;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +33,38 @@ public class ShopManager {
 
     public PlayerShop getOrCreateShop(UUID uuid) {
         UUID resolved = timeraldManager.resolve(uuid);
-        return shopMap.computeIfAbsent(resolved, PlayerShop::new);
+        PlayerShop existing = shopMap.get(resolved);
+        if (existing != null) return existing;
+
+        // Try load from file
+        File file = new File(shopFolder, resolved.toString() + ".yml");
+        if (file.exists()) {
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+            PlayerShop shop = new PlayerShop(resolved);
+
+            // Load listings
+            for (Map<?, ?> map : config.getMapList("listings")) {
+                shop.addListing(ShopItem.deserialize(map));
+            }
+            // Load requests
+            for (Map<?, ?> map : config.getMapList("requests")) {
+                shop.addRequest(OrderItem.deserialize(map));
+            }
+            // Load stash
+            for (Map<?, ?> map : config.getMapList("stash")) {
+                shop.addToStash(ItemStack.deserialize((Map<String, Object>) map));
+            }
+
+            shopMap.put(resolved, shop);
+            return shop;
+        }
+
+        // No file exists — create new shop
+        PlayerShop shop = new PlayerShop(resolved);
+        shopMap.put(resolved, shop);
+        return shop;
     }
+
 
     public PlayerShop openShop(Player player) {
         UUID uuid = timeraldManager.resolve(player.getUniqueId());
@@ -62,6 +93,13 @@ public class ShopManager {
         config.set("owner", resolved.toString());
         config.set("listings", listingData);
 
+        // Save requests (buy requests)
+        List<Map<String, Object>> requestData = new ArrayList<>();
+        for (OrderItem item : shop.getRequests()) {
+            requestData.add(item.serialize());
+        }
+        config.set("requests", requestData);
+
         // Save stash
         List<Map<String, Object>> stashData = new ArrayList<>();
         for (ItemStack item : shop.getStash()) {
@@ -75,7 +113,6 @@ public class ShopManager {
             plugin.getLogger().log(Level.WARNING, "Failed to save shop for: " + uuid, e);
         }
     }
-
 
     public void saveShops() {
         for (Map.Entry<UUID, PlayerShop> entry : shopMap.entrySet()) {
@@ -91,8 +128,15 @@ public class ShopManager {
                 listingData.add(item.serialize());
             }
 
+            // Save Request
+            List<Map<String, Object>> requestData = new ArrayList<>();
+            for (OrderItem item : shop.getRequests()) {
+                requestData.add(item.serialize());
+            }
+
             config.set("owner", resolved.toString());
             config.set("listings", listingData);
+            config.set("requests", requestData);
 
             // Save stash manually as a section
             List<Map<String, Object>> stashData = new ArrayList<>();
@@ -126,6 +170,12 @@ public class ShopManager {
                     shop.addListing(ShopItem.deserialize(map));
                 }
 
+                // Load requests
+                List<Map<?, ?>> requestData = config.getMapList("requests");
+                for (Map<?, ?> map : requestData) {
+                    shop.addRequest(OrderItem.deserialize(map));
+                }
+
                 // Load stash manually
                 List<Map<?, ?>> stashData = config.getMapList("stash");
                 for (Map<?, ?> map : stashData) {
@@ -139,4 +189,24 @@ public class ShopManager {
             }
         }
     }
+
+    public List<OrderEntry> getAllRequests() {
+        List<OrderEntry> result = new ArrayList<>();
+
+        for (Map.Entry<UUID, PlayerShop> entry : shopMap.entrySet()) {
+            UUID ownerId = entry.getKey();
+            PlayerShop shop = entry.getValue();
+
+            for (int i = 0; i < shop.getRequests().size(); i++) {
+                OrderItem request = shop.getRequests().get(i);
+
+                String name = Bukkit.getOfflinePlayer(ownerId).getName();
+                if (name == null) name = ownerId.toString(); // fallback if player name is unknown
+
+                result.add(new OrderEntry(ownerId, name, i, request));
+            }
+        }
+        return result;
+    }
+
 }
