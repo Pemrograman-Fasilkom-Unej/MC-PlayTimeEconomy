@@ -139,7 +139,7 @@ shop:
     amount: 1
     lore:
       - "§7Right click to store XP"
-      - "§7Materialize your XP as boook."
+      - "§7Materialize your XP as book."
       - "§eConsume §a910 §exp or Level ~25" 
     # https://thistothatcalculator.com/minecraft-level-to-xp-calculator/
 
