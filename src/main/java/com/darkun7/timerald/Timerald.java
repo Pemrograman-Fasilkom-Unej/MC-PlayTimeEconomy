@@ -17,7 +17,7 @@ import com.darkun7.timerald.shop.ShopManager;
 import com.darkun7.timerald.data.CustomItemManager;
 import com.darkun7.timerald.gui.CraftingGUI;
 
-import java.io.File; 
+import java.io.File;
 
 public final class Timerald extends JavaPlugin {
 
@@ -55,7 +55,6 @@ public final class Timerald extends JavaPlugin {
         this.shopGUI = new ShopGUI(this, this.shopManager);
         // END: UNDER DEVELOPMENT
 
-
         getServer().getPluginManager().registerEvents(new TimeraldListener(this), this);
         getServer().getPluginManager().registerEvents(new CustomItemListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
@@ -64,6 +63,7 @@ public final class Timerald extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PreventPlacementListener(this), this);
         getServer().getPluginManager().registerEvents(clickChainListener, this);
         getServer().getPluginManager().registerEvents(new CraftingInteractListener(this), this);
+        getServer().getPluginManager().registerEvents(new ChatListener(this), this);
 
         getCommand("deposit").setExecutor(new DepositCommand(this));
         getCommand("withdraw").setExecutor(new WithdrawCommand(this));
@@ -71,7 +71,7 @@ public final class Timerald extends JavaPlugin {
         getCommand("timerald").setTabCompleter(new TimeraldTabCompleter());
         getCommand("shop").setExecutor(new ShopCommand(this, this.shopManager, this.shopGUI));
         getCommand("shop").setTabCompleter(new ShopTabCompleter(this.shopManager));
-        
+
         new TimeraldShopGUI(this);
 
         getLogger().info("Timerald plugin enabled.");
