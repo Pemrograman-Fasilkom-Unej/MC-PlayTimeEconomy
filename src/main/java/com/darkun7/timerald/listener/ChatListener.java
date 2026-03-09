@@ -28,9 +28,9 @@ public class ChatListener implements Listener {
         }
 
         // Paper's ItemStack has displayName() and asHoverEvent()
-        Component itemComponent = Component.text("[")
+        Component itemComponent = Component.text("")
                 .append(hand.displayName().colorIfAbsent(NamedTextColor.AQUA))
-                .append(Component.text("]"))
+                .append(Component.text(""))
                 .color(NamedTextColor.AQUA)
                 .hoverEvent(hand.asHoverEvent());
 
@@ -46,10 +46,10 @@ public class ChatListener implements Listener {
         if (prefix != null) {
             io.papermc.paper.chat.ChatRenderer oldRenderer = event.renderer();
             event.renderer(io.papermc.paper.chat.ChatRenderer.viewerUnaware(
-                    (source, sourceDisplayName, msg) -> Component.text("[" + prefix + "] ").color(NamedTextColor.AQUA)
-                            .append(sourceDisplayName.colorIfAbsent(NamedTextColor.WHITE))
-                            .append(Component.text(": ").color(NamedTextColor.WHITE))
-                            .append(msg)));
+                    (source, sourceDisplayName, msg) -> Component.text("[" + prefix + "] ").color(NamedTextColor.BLUE)
+                            .append(sourceDisplayName.color(NamedTextColor.WHITE))
+                            .append(Component.text("> ").color(NamedTextColor.WHITE))
+                            .append(msg.color(NamedTextColor.WHITE))));
         }
     }
 
